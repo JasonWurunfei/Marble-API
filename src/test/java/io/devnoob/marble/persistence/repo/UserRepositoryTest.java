@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import io.devnoob.marble.persistence.entity.User;
-import io.devnoob.marble.persistence.repo.UserRepository;
 
 public class UserRepositoryTest {
 
