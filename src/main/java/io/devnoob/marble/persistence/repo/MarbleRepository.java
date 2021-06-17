@@ -108,4 +108,23 @@ public class MarbleRepository extends DataRepository<Marble, Long> {
         }
         return isSuccess;
     }
+
+    @Override
+    public boolean update(Marble obj) {
+        boolean isSuccess = false;
+        try {
+            String query = "UPDATE marble SET name=?, user_id=?, creation_time=?, translation=?, story=?  WHERE id=?;";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, obj.getName());
+            statement.setLong(2, obj.getUserId());
+            statement.setTimestamp(3, obj.getCreationTime());
+            statement.setString(4, obj.getTranslation());
+            statement.setString(5, obj.getStory());
+            statement.setLong(6, obj.getId());
+            isSuccess = statement.executeUpdate() == 1;
+        } catch (SQLException error) {
+            error.printStackTrace();
+        }
+        return isSuccess;
+    }
 }

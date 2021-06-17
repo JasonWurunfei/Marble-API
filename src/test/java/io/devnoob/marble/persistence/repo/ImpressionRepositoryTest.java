@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -136,4 +137,42 @@ public class ImpressionRepositoryTest {
             }
         }
     }
+
+    @Nested
+    @DisplayName("Test update method")
+    class TestUpdate {
+        @Test
+        void testUpdateReturnTrue() {
+            assertTrue(impressionRepository.update(
+                new Impression("path2", 2L, 2)));
+        }
+
+        @Test
+        void testIfUpdateCorrectly() throws SQLException {
+            Impression impression = null;
+
+            // update
+            Long updatedMarbleId = 123L;
+            int updatedType = 123;
+
+            impression = new Impression(
+                "path2",
+                updatedMarbleId,
+                updatedType
+            );
+
+
+            impressionRepository.update(impression);
+
+            // after update
+            Statement statement = conn.createStatement();
+            ResultSet rs = statement.executeQuery("SELECT * FROM impression WHERE path=\"path2\";");
+            while(rs.next()) {
+                assertEquals(rs.getLong(2), updatedMarbleId);
+                assertEquals(rs.getInt(3), updatedType);
+            }
+
+        }
+    }
+
 }

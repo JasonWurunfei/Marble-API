@@ -100,4 +100,22 @@ public class BagRepository extends DataRepository<Bag, Long> {
         }
         return isSuccess;
     }
+
+    @Override
+    public boolean update(Bag obj) {
+        boolean isSuccess = false;
+        try {
+            String query = "UPDATE bag SET user_id=?, name=?, creation_time=? WHERE id=?;";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setLong(1, obj.getuserId());
+            statement.setString(2, obj.getName());
+            statement.setTimestamp(3, obj.getcreationTime());
+            statement.setLong(4, obj.getId());
+
+            isSuccess = statement.executeUpdate() == 1;
+        } catch (SQLException error) {
+            error.printStackTrace();
+        }
+        return isSuccess;
+    }
 }

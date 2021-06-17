@@ -132,4 +132,43 @@ public class BagRepositoryTest {
             }
         }
     }
+
+    @Nested
+    @DisplayName("Test update method")
+    class TestUpdate {
+        @Test
+        void testUpdateReturnTrue() {
+            assertTrue(bagRepository.update(
+                new Bag(2L, 123L, "bag_name_updated", new Timestamp(12312312))));
+        }
+
+        @Test
+        void testIfUpdateCorrectly() throws SQLException {
+            Bag bag = null;
+
+            // update
+            Long updatedUserId = 123L;
+            String updatedName = "bag_name_updated";
+            Timestamp updatedCreationTime = new Timestamp(12312312);
+
+            bag = new Bag(
+                2L,
+                updatedUserId,
+                updatedName,
+                updatedCreationTime
+            );
+
+
+            bagRepository.update(bag);
+
+            // after update
+            Statement statement = conn.createStatement();
+            ResultSet rs = statement.executeQuery("SELECT * FROM bag WHERE id=2;");
+            while(rs.next()) {
+                assertEquals(rs.getLong(2), updatedUserId);
+                assertEquals(rs.getString(3), updatedName);
+                assertEquals(rs.getTimestamp(4), updatedCreationTime);
+            }
+        }
+    }
 }

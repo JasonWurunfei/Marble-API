@@ -147,33 +147,19 @@ public class UserRepositoryTest {
         @Test
         void testIfUpdateCorrectly() throws SQLException {
             User user = null;
-
-            // before update
-            String query = "SELECT * FROM user WHERE id=1;";
-            Statement statement = conn.createStatement();
-            ResultSet rs = statement.executeQuery(query);
-            while(rs.next()) {
-                user = new User(
-                    rs.getLong(1),
-                    rs.getString(2)
-                );
-            }
-
+           
             // update
             String updatedName = "test_name";
-            user.setUsername(updatedName);
+
+            user = new User(1L, updatedName);
             userRepository.update(user);
 
             // after update
-            rs = statement.executeQuery(query);
+            Statement statement = conn.createStatement();
+            ResultSet rs = statement.executeQuery("SELECT * FROM user WHERE id=1;");
             while(rs.next()) {
-                user = new User(
-                    rs.getLong(1),
-                    rs.getString(2)
-                );
+                assertEquals(rs.getString(2), updatedName);
             }
-
-            assertEquals(user.getUsername(), updatedName);
         }
     }
 }

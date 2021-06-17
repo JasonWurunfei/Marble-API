@@ -112,7 +112,15 @@ public class MarbleRepositoryTest {
         Statement statement = conn.createStatement();
         ResultSet rs = statement.executeQuery(query);;
         while(rs.next()) {
-            expected.add(new Marble(rs.getLong(1), rs.getString(2), rs.getLong(3), rs.getTimestamp(4), rs.getString(5), rs.getString(6)));
+            expected.add(new Marble(
+                rs.getLong(1), 
+                rs.getString(2),
+                rs.getLong(3), 
+                rs.getTimestamp(4), 
+                rs.getString(5), 
+                rs.getString(6)
+                )
+            );
         }
         assertEquals(expected, marbleRepository.findAll());
     }
@@ -123,12 +131,14 @@ public class MarbleRepositoryTest {
         
         @Test
         void testInsert() {
-            assertTrue(marbleRepository.insert(new Marble("test_marble3", 3L, new Timestamp(1623917420), "marble3_test", "story_marble3")));
+            assertTrue(marbleRepository.insert(
+                new Marble("test_marble3", 3L, new Timestamp(1623917420), "marble3_test", "story_marble3")));
         }
 
         @Test
         void testInsertCorrectly() throws SQLException {
-            marbleRepository.insert(new Marble("test_marble3", 3L, new Timestamp(1623917420), "marble3_test", "story_marble3"));
+            marbleRepository.insert(new Marble(
+                "test_marble3", 3L, new Timestamp(1623917420), "marble3_test", "story_marble3"));
             String query = "SELECT name FROM marble WHERE name=?";
             PreparedStatement statement = conn.prepareStatement(query);
             statement.setString(1, "test_marble3");
@@ -136,6 +146,52 @@ public class MarbleRepositoryTest {
             while(rs.next()) {
                 assertEquals("test_marble3", rs.getString(1));
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("Test update method")
+    class TestUpdate {
+        @Test
+        void testUpdateReturnTrue() {
+            assertTrue(marbleRepository.update(
+                new Marble(2L, "test_marble3", 3L, new Timestamp(1623917420), "marble3_test", "story_marble3")));
+        }
+
+        @Test
+        void testIfUpdateCorrectly() throws SQLException {
+            Marble marble = null;
+
+            // update
+            String updatedName = "test_marble2_updated";
+            Long updatedUserId = 123L;
+            Timestamp updatedCreationTime = new Timestamp(12312312);
+            String updatedTranslation = "marble2_test_updated";
+            String updatedStory = "story_marble2_updated";
+
+            marble = new Marble(
+                2L,
+                updatedName,
+                updatedUserId,
+                updatedCreationTime,
+                updatedTranslation,
+                updatedStory
+            );
+
+
+            marbleRepository.update(marble);
+
+            // after update
+            Statement statement = conn.createStatement();
+            ResultSet rs = statement.executeQuery("SELECT * FROM marble WHERE id=2;");
+            while(rs.next()) {
+                assertEquals(rs.getString(2), updatedName);
+                assertEquals(rs.getLong(3), updatedUserId);
+                assertEquals(rs.getTimestamp(4), updatedCreationTime);
+                assertEquals(rs.getString(5), updatedTranslation);
+                assertEquals(rs.getString(6), updatedStory);
+            }
+
         }
     }
 }

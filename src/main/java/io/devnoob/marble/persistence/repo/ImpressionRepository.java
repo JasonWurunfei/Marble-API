@@ -94,4 +94,20 @@ public class ImpressionRepository extends DataRepository<Impression, String> {
         }
         return isSuccess;
     }
+
+    @Override
+    public boolean update(Impression obj) {
+        boolean isSuccess = false;
+        try {
+            String query = "UPDATE impression SET marble_id=?, type=? WHERE path=?;";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setLong(1, obj.getMarbleId());
+            statement.setInt(2, obj.getType());
+            statement.setString(3, obj.getPath());
+            isSuccess = statement.executeUpdate() == 1;
+        } catch (SQLException error) {
+            error.printStackTrace();
+        }
+        return isSuccess;
+    }
 }
