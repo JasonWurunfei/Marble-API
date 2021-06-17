@@ -67,6 +67,14 @@ public abstract class DataRepository<T, ID> {
     abstract public boolean insert(T obj);
 
     /**
+     * This method will update the record according 
+     * to the given object model.
+     * @param obj
+     * @return true if the update is success otherwise false.
+     */
+    abstract public boolean update(T obj);
+
+    /**
      * This method will use the given ID to
      * remove a data record in the database
      * @param id
