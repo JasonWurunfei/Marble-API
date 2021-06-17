@@ -31,9 +31,9 @@ public class UserController {
         }
     }
 
-    @GetMapping("/{id}")
-    public User getUser(@PathVariable Long id) {
-        return userRepository.find(id);
+    @GetMapping("/{user_id}")
+    public User getUser(@PathVariable Long user_id) {
+        return userRepository.find(user_id);
     }
 
     @PostMapping("/")
@@ -41,9 +41,9 @@ public class UserController {
         return userRepository.insert(user);
     }
 
-    @DeleteMapping("/{id}")
-    public boolean deleteUser(@PathVariable Long id) {
-        return userRepository.delete(id);
+    @DeleteMapping("/{user_id}")
+    public boolean deleteUser(@PathVariable Long user_id) {
+        return userRepository.delete(user_id);
     }
 
     @PutMapping("/")

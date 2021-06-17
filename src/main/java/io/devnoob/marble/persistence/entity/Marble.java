@@ -27,6 +27,10 @@ public class Marble{
         this.story = story;
     }
 
+    public Marble() {
+        this.creationTime = new Timestamp(System.currentTimeMillis());
+    }
+
     public Long getId() {
         return id;
     }

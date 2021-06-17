@@ -127,4 +127,27 @@ public class MarbleRepository extends DataRepository<Marble, Long> {
         }
         return isSuccess;
     }
+
+    public List<Marble> getMarblesByUserId(Long id) {
+        List<Marble> marbles = new LinkedList<>();
+        try {
+            String query = "SELECT * FROM marble WHERE user_id=?;";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setLong(1, id);
+            ResultSet result = statement.executeQuery();
+            while(result.next()) {
+                marbles.add(new Marble(
+                    result.getLong("id"), 
+                    result.getString("name"),
+                    result.getLong("user_id"),
+                    result.getTimestamp("creation_time"),
+                    result.getString("translation"),
+                    result.getString("story")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return marbles; 
+    }
 }
