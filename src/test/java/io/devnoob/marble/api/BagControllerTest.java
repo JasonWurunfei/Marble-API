@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.DisplayName;
@@ -17,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.times;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -36,23 +38,55 @@ public class BagControllerTest {
     private BagRepository bagRepository;
 
     @Test
-    void testBatchRemove() {
+    void testBatchRemove() throws Exception {
+        List<Long> ids = new LinkedList<>();
+        ids.add(1L);
+        ids.add(2L);
 
+        Mockito.when(bagRepository.delete(1L)).thenReturn(true);
+        Mockito.when(bagRepository.delete(2L)).thenReturn(true);
+
+        String url = "/api/bag/batchremove/";
+
+        mockMvc.perform(
+            delete(url)
+            .contentType("application/json")
+            .content(objectMapper.writeValueAsString(ids))
+            ).andExpect(status().isOk())
+            .andExpect(content().string("true"));
+            
+            Mockito.verify(bagRepository, times(1)).delete(1L);
+            Mockito.verify(bagRepository, times(1)).delete(2L);
     }
 
     @Test
-    void testCreateUser() {
+    void testCreatBag() throws Exception {
+        Bag newBag = new Bag(1L, "test_bag1", new Timestamp(1623917399));
+        Mockito.when(bagRepository.insert(newBag)).thenReturn(true);
 
+        String url = "/api/bag/";
+        mockMvc.perform(
+            post(url)
+            .contentType("application/json")
+            .content(objectMapper.writeValueAsString(newBag))
+        ).andExpect(status().isOk())
+        .andExpect(content().string("true"));
+        Mockito.verify(bagRepository, times(1)).insert(newBag);
     }
 
     @Test
-    void testDeleteMarble() {
-
+    void testDeleteBag() throws Exception {
+        Mockito.when(bagRepository.delete(1L)).thenReturn(true);
+        String url = "/api/bag/1";
+        mockMvc.perform(delete(url))
+            .andExpect(status().isOk())
+            .andExpect(content().string("true"));
+        Mockito.verify(bagRepository, times(1)).delete(1L);
     }
 
     @Nested
     @DisplayName("Test GetBagAPI")
-    class testGetBagAPI {
+    class TestGetBagAPI {
 
         @Test
         @DisplayName("Should return ok when bag exists")
@@ -62,6 +96,7 @@ public class BagControllerTest {
     
             String url = "/api/bag/marble/1";
             mockMvc.perform(get(url)).andExpect(status().isOk());
+            Mockito.verify(bagRepository, times(1)).find(1L);
         }
 
 
@@ -72,6 +107,7 @@ public class BagControllerTest {
     
             String url = "/api/bag/marble/2";
             mockMvc.perform(get(url)).andExpect(status().isNotFound());
+            Mockito.verify(bagRepository, times(1)).find(2L);
         }
 
         @Test
@@ -86,6 +122,7 @@ public class BagControllerTest {
             String actualJsonResponse = mvcResult.getResponse().getContentAsString();
             String expectedJsonResponse = objectMapper.writeValueAsString(bag);
             assertEquals(expectedJsonResponse, actualJsonResponse);
+            Mockito.verify(bagRepository, times(1)).find(1L);
         }
     }
 
@@ -99,10 +136,11 @@ public class BagControllerTest {
             List<Bag> bags = new LinkedList<>();
             bags.add(new Bag(1L, 1L, "test_bag1", new Timestamp(1623917398)));
             Mockito.when(bagRepository.getBagsByUserId(1L))
-            .thenReturn(bags);
+                .thenReturn(bags);
 
             String url = "/api/bag/user/1";
             mockMvc.perform(get(url)).andExpect(status().isOk());
+            Mockito.verify(bagRepository, times(1)).getBagsByUserId(1L);
         }
 
         @Test
@@ -117,12 +155,24 @@ public class BagControllerTest {
             String actualJsonResponse = mvcResult.getResponse().getContentAsString();
             String expectedJsonResponse = objectMapper.writeValueAsString(bags);
             assertEquals(expectedJsonResponse, actualJsonResponse); 
+            Mockito.verify(bagRepository, times(1)).getBagsByUserId(1L);
         }
     }
 
 
     @Test
-    void testUpdateMarble() {
+    void testUpdateBag() throws JsonProcessingException, Exception {
+        Bag updatedBag = new Bag(1L, 1L, "test_bag1", new Timestamp(1623917398));
+        Mockito.when(bagRepository.update(updatedBag)).thenReturn(true);
 
+        String url = "/api/bag/";
+        mockMvc.perform(
+            put(url)
+            .contentType("application/json")
+            .content(objectMapper.writeValueAsString(updatedBag))
+        ).andExpect(status().isOk())
+        .andExpect(content().string("true"));
+
+        Mockito.verify(bagRepository, times(1)).update(updatedBag);
     }
 }

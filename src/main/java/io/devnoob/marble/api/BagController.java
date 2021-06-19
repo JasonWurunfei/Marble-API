@@ -50,17 +50,17 @@ public class BagController {
     }
 
     @PostMapping("/")
-    public boolean createUser(@RequestBody Bag bag) {
+    public boolean createBag(@RequestBody Bag bag) {
         return bagRepository.insert(bag);
     }
 
     @PutMapping("/")
-    public boolean updateMarble(@RequestBody Bag bag) {
+    public boolean updateBag(@RequestBody Bag bag) {
         return bagRepository.update(bag);
     }
 
     @DeleteMapping("/{bag_id}")
-    public boolean deleteMarble(@PathVariable Long bag_id) {
+    public boolean deleteBag(@PathVariable Long bag_id) {
         return bagRepository.delete(bag_id);
     }
 
