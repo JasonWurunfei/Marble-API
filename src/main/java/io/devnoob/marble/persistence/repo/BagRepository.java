@@ -118,4 +118,25 @@ public class BagRepository extends DataRepository<Bag, Long> {
         }
         return isSuccess;
     }
+
+    public List<Bag> getBagsByUserId(Long id) {
+        List<Bag> bags = new  LinkedList<>();
+        try {
+            String query = "SELECT * FROM bag WHERE user_id=?;";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setLong(1, id);
+            ResultSet result = statement.executeQuery();
+            while(result.next()) {
+                 bags.add(new Bag(
+                     result.getLong("id"), 
+                     result.getLong("user_id"), 
+                     result.getString("name"), 
+                     result.getTimestamp("creation_time")
+                     ));
+            }
+        } catch (SQLException e) {
+            e.getSQLState();
+        }
+        return bags;
+    }
 }

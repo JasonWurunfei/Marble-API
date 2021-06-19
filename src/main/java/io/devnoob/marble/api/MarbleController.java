@@ -41,7 +41,7 @@ public class MarbleController {
     }
 
     @GetMapping("/{id}")
-    public Marble getUser(@PathVariable Long id) {
+    public Marble getMarble(@PathVariable Long id) {
         return marbleRepository.find(id);
     }
 

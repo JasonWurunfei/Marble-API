@@ -21,6 +21,10 @@ public class Bag {
         this.creationTime = creationTime;
     }
 
+    public Bag() {
+        this.creationTime = new Timestamp(System.currentTimeMillis());
+    }
+
     public Long getId() {
         return id;
     }
