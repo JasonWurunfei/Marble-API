@@ -3,6 +3,8 @@ package io.devnoob.marble.api;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,8 +34,11 @@ public class UserController {
     }
 
     @GetMapping("/{user_id}")
-    public User getUser(@PathVariable Long user_id) {
-        return userRepository.find(user_id);
+    public ResponseEntity<User> getUser(@PathVariable Long user_id) {
+        User user = userRepository.find(user_id);
+        if (user == null)
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @PostMapping("/")
