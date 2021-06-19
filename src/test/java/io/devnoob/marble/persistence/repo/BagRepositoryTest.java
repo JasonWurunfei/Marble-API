@@ -171,4 +171,12 @@ public class BagRepositoryTest {
             }
         }
     }
+
+    @Test
+    void testGetBagsByUserId() {
+        List<Bag> expected = new LinkedList<>();
+        Bag bag = new Bag(1L, 1L, "test_bag1", new Timestamp(1623917398));
+        expected.add(bag);
+        assertEquals(expected, bagRepository.getBagsByUserId(1L));
+    }
 }
