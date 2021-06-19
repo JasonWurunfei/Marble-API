@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.times;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -34,18 +35,33 @@ public class UserControllerTest {
     private UserRepository userRepository;
 
     @Test
-    void testCreateUser() {
+    void testCreateUser() throws Exception {
+        User newUser = new User("test_user1");
+        Mockito.when(userRepository.insert(newUser)).thenReturn(true);
 
+        String url = "/api/user/";
+        mockMvc.perform(
+            post(url)
+            .contentType("application/json")
+            .content(objectMapper.writeValueAsString(newUser))
+        ).andExpect(status().isOk())
+        .andExpect(content().string("true"));
+        Mockito.verify(userRepository, times(1)).insert(newUser);
     }
 
     @Test
-    void testDeleteUser() {
-
+    void testDeleteUser() throws Exception {
+        Mockito.when(userRepository.delete(1L)).thenReturn(true);
+        String url = "/api/user/1";
+        mockMvc.perform(delete(url))
+            .andExpect(status().isOk())
+            .andExpect(content().string("true"));
+        Mockito.verify(userRepository, times(1)).delete(1L);
     }
 
     @Nested
     @DisplayName("Test GetUserAPI")
-    class testGetUserAPI {
+    class TestGetUserAPI {
         @Test
         @DisplayName("Should return ok when user exists")
         void getUserShouldReturnOkWhenUserExist() throws Exception {
@@ -54,6 +70,7 @@ public class UserControllerTest {
     
             String url = "/api/user/1";
             mockMvc.perform(get(url)).andExpect(status().isOk());
+            Mockito.verify(userRepository, times(1)).find(1L);
         }
 
 
@@ -64,6 +81,7 @@ public class UserControllerTest {
     
             String url = "/api/user/2";
             mockMvc.perform(get(url)).andExpect(status().isNotFound());
+            Mockito.verify(userRepository, times(1)).find(2L);
         }
 
         @Test
@@ -78,12 +96,24 @@ public class UserControllerTest {
             String actualJsonResponse = mvcResult.getResponse().getContentAsString();
             String expectedJsonResponse = objectMapper.writeValueAsString(user);
             assertEquals(expectedJsonResponse, actualJsonResponse);
+            Mockito.verify(userRepository, times(1)).find(1L);
         }
 
     }
 
     @Test
-    void testUpdateUser() {
+    void testUpdateUser() throws Exception {
+        User updatedUser = new User(1L, "test_user1");
+        Mockito.when(userRepository.update(updatedUser)).thenReturn(true);
 
+        String url = "/api/user/";
+        mockMvc.perform(
+            put(url)
+            .contentType("application/json")
+            .content(objectMapper.writeValueAsString(updatedUser))
+        ).andExpect(status().isOk())
+        .andExpect(content().string("true"));
+
+        Mockito.verify(userRepository, times(1)).update(updatedUser);
     }
 }
