@@ -56,7 +56,7 @@ public class MarbleController {
     }
 
     @PostMapping("/")
-    public boolean createUser(@RequestBody Marble marble) {
+    public boolean createMarble(@RequestBody Marble marble) {
         return marbleRepository.insert(marble);
     }
 

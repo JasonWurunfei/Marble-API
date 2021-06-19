@@ -1,5 +1,6 @@
 package io.devnoob.marble.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.DisplayName;
@@ -13,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.times;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -37,23 +39,50 @@ public class MarbleControllerTest {
 
 
     @Test
-    void testBatchRemove() {
+    void testBatchRemove() throws Exception {
+        List<Long> ids = new LinkedList<>();
+        ids.add(1L);
+        ids.add(2L);
 
+        Mockito.when(marbleRepository.delete(1L)).thenReturn(true);
+        Mockito.when(marbleRepository.delete(2L)).thenReturn(true);
+
+        String url = "/api/marble/batchremove/";
+
+        mockMvc.perform(
+            delete(url)
+            .contentType("application/json")
+            .content(objectMapper.writeValueAsString(ids))
+            ).andExpect(status().isOk())
+            .andExpect(content().string("true"));
+            
+            Mockito.verify(marbleRepository, times(1)).delete(1L);
+            Mockito.verify(marbleRepository, times(1)).delete(2L);
     }
 
     @Test
-    void testCreateUser() {
+    void testCreateMarble() throws Exception {
+        Marble newMarble = new Marble("test_marble1", 1L, new Timestamp(1623917398), "marble1_test", "story_marble1");
+        Mockito.when(marbleRepository.insert(newMarble)).thenReturn(true);
 
+        String url = "/api/marble/";
+        mockMvc.perform(
+            post(url)
+            .contentType("application/json")
+            .content(objectMapper.writeValueAsString(newMarble))
+        ).andExpect(status().isOk())
+        .andExpect(content().string("true"));
+        Mockito.verify(marbleRepository, times(1)).insert(newMarble);
     }
 
     @Test
-    void testDeleteMarble() {
-
-    }
-
-    @Test
-    void testGetMarble() {
-
+    void testDeleteMarble() throws Exception {
+        Mockito.when(marbleRepository.delete(1L)).thenReturn(true);
+        String url = "/api/marble/1";
+        mockMvc.perform(delete(url))
+            .andExpect(status().isOk())
+            .andExpect(content().string("true"));
+        Mockito.verify(marbleRepository, times(1)).delete(1L);
     }
 
     @Nested
@@ -68,6 +97,7 @@ public class MarbleControllerTest {
     
             String url = "/api/marble/1";
             mockMvc.perform(get(url)).andExpect(status().isOk());
+            Mockito.verify(marbleRepository, times(1)).find(1L);
         }
 
 
@@ -78,6 +108,7 @@ public class MarbleControllerTest {
     
             String url = "/api/marble/2";
             mockMvc.perform(get(url)).andExpect(status().isNotFound());
+            Mockito.verify(marbleRepository, times(1)).find(2L);
         }
 
         @Test
@@ -92,6 +123,7 @@ public class MarbleControllerTest {
             String actualJsonResponse = mvcResult.getResponse().getContentAsString();
             String expectedJsonResponse = objectMapper.writeValueAsString(marble);
             assertEquals(expectedJsonResponse, actualJsonResponse);
+            Mockito.verify(marbleRepository, times(1)).find(1L);
         }
 
     }
@@ -106,10 +138,11 @@ public class MarbleControllerTest {
             List<Marble> marbles = new LinkedList<>();
             marbles.add(new Marble(1L, "test_marble1", 1L, new Timestamp(1623917398), "marble1_test", "story_marble1"));
             Mockito.when(marbleRepository.getMarblesByUserId(1L))
-            .thenReturn(marbles);
+                .thenReturn(marbles);
 
             String url = "/api/marble/user/1";
             mockMvc.perform(get(url)).andExpect(status().isOk());
+            Mockito.verify(marbleRepository, times(1)).getMarblesByUserId(1L);
         }
 
         @Test
@@ -124,11 +157,23 @@ public class MarbleControllerTest {
             String actualJsonResponse = mvcResult.getResponse().getContentAsString();
             String expectedJsonResponse = objectMapper.writeValueAsString(marbles);
             assertEquals(expectedJsonResponse, actualJsonResponse); 
+            Mockito.verify(marbleRepository, times(1)).getMarblesByUserId(1L);
         }
     }
 
     @Test
-    void testUpdateMarble() {
+    void testUpdateMarble() throws Exception {
+        Marble updatedMarble = new Marble(1L, "test_marble1", 1L, new Timestamp(1623917398), "marble1_test", "story_marble1");
+        Mockito.when(marbleRepository.update(updatedMarble)).thenReturn(true);
 
+        String url = "/api/marble/";
+        mockMvc.perform(
+            put(url)
+            .contentType("application/json")
+            .content(objectMapper.writeValueAsString(updatedMarble))
+        ).andExpect(status().isOk())
+        .andExpect(content().string("true"));
+
+        Mockito.verify(marbleRepository, times(1)).update(updatedMarble);
     }
 }

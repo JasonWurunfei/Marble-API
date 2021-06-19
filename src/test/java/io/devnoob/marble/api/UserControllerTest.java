@@ -98,7 +98,6 @@ public class UserControllerTest {
             assertEquals(expectedJsonResponse, actualJsonResponse);
             Mockito.verify(userRepository, times(1)).find(1L);
         }
-
     }
 
     @Test
