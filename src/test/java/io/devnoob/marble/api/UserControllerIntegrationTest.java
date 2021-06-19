@@ -3,6 +3,8 @@ package io.devnoob.marble.api;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -20,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -75,7 +78,7 @@ public class UserControllerIntegrationTest {
 
     @Test
     void testCreateUser() throws Exception {
-        User newUser = new User("test_user1");
+        User newUser = new User("test_user3");
         String url = "/api/user/";
         mockMvc.perform(
             post(url)
@@ -83,6 +86,15 @@ public class UserControllerIntegrationTest {
             .content(objectMapper.writeValueAsString(newUser))
         ).andExpect(status().isOk())
         .andExpect(content().string("true"));
+
+        String query = "SELECT * FROM user WHERE username=?";
+        PreparedStatement statement = conn.prepareStatement(query);
+        statement.setString(1, "test_user3");
+        ResultSet rs = statement.executeQuery();
+        while(rs.next()) {
+            assertEquals(3L, rs.getLong(1));
+            assertEquals("test_user3",  rs.getString(2));
+        }
     }
 
     @Test
@@ -91,6 +103,11 @@ public class UserControllerIntegrationTest {
         mockMvc.perform(delete(url))
             .andExpect(status().isOk())
             .andExpect(content().string("true"));
+
+        String query = "SELECT * FROM user WHERE id=1;";
+        Statement statement = conn.createStatement();
+        ResultSet rs = statement.executeQuery(query);
+        assertFalse(rs.next());
     }
 
     @Nested
@@ -124,7 +141,7 @@ public class UserControllerIntegrationTest {
 
     @Test
     void testUpdateUser() throws Exception {
-        User updatedUser = new User(1L, "test_user1");
+        User updatedUser = new User(1L, "test_user_updated");
 
         String url = "/api/user/";
         mockMvc.perform(
@@ -133,5 +150,11 @@ public class UserControllerIntegrationTest {
             .content(objectMapper.writeValueAsString(updatedUser))
         ).andExpect(status().isOk())
         .andExpect(content().string("true"));
+
+        Statement statement = conn.createStatement();
+        ResultSet rs = statement.executeQuery("SELECT * FROM user WHERE id=1;");
+        while(rs.next()) {
+            assertEquals(rs.getString(2), updatedUser.getUsername());
+        }
     }
 }
