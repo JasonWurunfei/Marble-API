@@ -6,6 +6,8 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,8 +43,11 @@ public class MarbleController {
     }
 
     @GetMapping("/{id}")
-    public Marble getMarble(@PathVariable Long id) {
-        return marbleRepository.find(id);
+    public ResponseEntity<Marble> getMarble(@PathVariable Long id) {
+        Marble marble = marbleRepository.find(id);
+        if (marble == null) 
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(marble, HttpStatus.OK);
     }
 
     @GetMapping("/user/{user_id}")

@@ -45,10 +45,10 @@ public class UserControllerTest {
 
     @Nested
     @DisplayName("Test GetUserAPI")
-    class GetUserAPI {
+    class testGetUserAPI {
         @Test
         @DisplayName("Should return ok when user exists")
-        void testGetUserShouldReturnOkWhenUserExist() throws Exception {
+        void getUserShouldReturnOkWhenUserExist() throws Exception {
             Mockito.when(userRepository.find(1L))
                 .thenReturn(new User(1L, "test_user1"));
     
@@ -59,7 +59,7 @@ public class UserControllerTest {
 
         @Test
         @DisplayName("Should return 404 when user does not exist")
-        void testGetUserShouldReturn404WhenUserDoesNotExist() throws Exception {
+        void getUserShouldReturn404WhenUserDoesNotExist() throws Exception {
             Mockito.when(userRepository.find(2L)).thenReturn(null);
     
             String url = "/api/user/2";
@@ -68,7 +68,7 @@ public class UserControllerTest {
 
         @Test
         @DisplayName("GetUser shoud return correct response body")
-        void testGetUserReturnCorrectResponseBody() throws Exception {
+        void getUserReturnCorrectResponseBody() throws Exception {
             User user = new User(1L, "test_user1");
             Mockito.when(userRepository.find(1L))
                 .thenReturn(user);
