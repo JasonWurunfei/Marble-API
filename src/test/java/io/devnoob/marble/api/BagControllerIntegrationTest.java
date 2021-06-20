@@ -60,8 +60,10 @@ public class BagControllerIntegrationTest {
         Statement statement = conn.createStatement();
         statement.execute(query);
 
-        String query1 = "INSERT INTO bag(user_id, name, creation_time) VALUES(1,\"test_bag1\",1623917398);";
-        String query2 = "INSERT INTO bag(user_id, name, creation_time) VALUES(2,\"test_bag2\",1623917480);";
+        String query1 = "INSERT INTO bag(user_id, name, creation_time)" 
+                            + "VALUES(1,\"test_bag1\",1623917398);";
+        String query2 = "INSERT INTO bag(user_id, name, creation_time)"
+                            + "VALUES(2,\"test_bag2\",1623917480);";
 
         statement.executeUpdate(query1);
         statement.executeUpdate(query2);
@@ -173,7 +175,7 @@ public class BagControllerIntegrationTest {
 
     @Test
     void testUpdateBag() throws Exception {
-        Bag updatedBag = new Bag(1L, 1L, "test_bag1_updated", new Timestamp(1623917398));
+        Bag updatedBag = new Bag(1L, 3L, "test_bag1_updated", new Timestamp(1623917331));
 
         String url = "/api/bag/";
         mockMvc.perform(
@@ -186,7 +188,9 @@ public class BagControllerIntegrationTest {
         Statement statement = conn.createStatement();
         ResultSet rs = statement.executeQuery("SELECT * FROM bag WHERE id=1;");
         while(rs.next()) {
+            assertEquals(rs.getLong(2), updatedBag.getuserId());
             assertEquals(rs.getString(3), updatedBag.getName());
+            assertEquals(rs.getTimestamp(4), updatedBag.getcreationTime());
         }
     }
 
