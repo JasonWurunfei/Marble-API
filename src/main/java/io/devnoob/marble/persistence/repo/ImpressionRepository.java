@@ -7,14 +7,18 @@ import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
 import io.devnoob.marble.persistence.entity.Impression;
 
-public class ImpressionRepository extends DataRepository<Impression, String> {
+@Service
+public class ImpressionRepository extends DataRepository<Impression, Long> {
 
     @Override
     public void createTable() throws SQLException {
         String query = "CREATE TABLE IF NOT EXISTS impression (" + 
-                        "path       text PRIMARY KEY," + 
+                        "id         integer PRIMARY KEY," + 
+                        "path       text NOT NULL," + 
                         "marble_id  integer NOT NULL," +
                         "type       integer NOT Null" + 
                  ");";
@@ -23,15 +27,16 @@ public class ImpressionRepository extends DataRepository<Impression, String> {
     }
 
     @Override
-    public Impression find(String path) {
+    public Impression find(Long id) {
         Impression impression = null;
         try {
-            String query = "SELECT * FROM impression WHERE path=?;";
+            String query = "SELECT * FROM impression WHERE id=?;";
             PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, path);
+            statement.setLong(1, id);
             ResultSet result = statement.executeQuery();
             while(result.next()) {
                 impression = new Impression(
+                    result.getLong("id"),
                     result.getString("path"), 
                     result.getLong("marble_id"),
                     result.getInt("type")
@@ -53,6 +58,7 @@ public class ImpressionRepository extends DataRepository<Impression, String> {
 
             while(result.next()) {
                 impressions.add(new Impression(
+                    result.getLong("id"),
                     result.getString("path"),
                     result.getLong("marble_id"),
                     result.getInt("type")
@@ -82,12 +88,12 @@ public class ImpressionRepository extends DataRepository<Impression, String> {
     }
 
     @Override
-    public boolean delete(String path) {
+    public boolean delete(Long id) {
         boolean isSuccess = false;
         try {
-            String query = "DELETE FROM impression WHERE path=?;";
+            String query = "DELETE FROM impression WHERE id=?;";
             PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, path);
+            statement.setLong(1, id);
             isSuccess = statement.executeUpdate() == 1;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -99,15 +105,37 @@ public class ImpressionRepository extends DataRepository<Impression, String> {
     public boolean update(Impression obj) {
         boolean isSuccess = false;
         try {
-            String query = "UPDATE impression SET marble_id=?, type=? WHERE path=?;";
+            String query = "UPDATE impression SET path=?, marble_id=?, type=? WHERE id=?;";
             PreparedStatement statement = connection.prepareStatement(query);
-            statement.setLong(1, obj.getMarbleId());
-            statement.setInt(2, obj.getType());
-            statement.setString(3, obj.getPath());
+            statement.setString(1, obj.getPath());
+            statement.setLong(2, obj.getMarbleId());
+            statement.setInt(3, obj.getType());
+            statement.setLong(4, obj.getId());
             isSuccess = statement.executeUpdate() == 1;
         } catch (SQLException error) {
             error.printStackTrace();
         }
         return isSuccess;
+    }
+
+    public List<Impression> getImpressionsByMarbleId(Long id) {
+        List<Impression> impressions = new LinkedList<>();
+        try{
+            String query = "SELECT * FROM impression WHERE marble_id=?;";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setLong(1, id);
+            ResultSet result = statement.executeQuery();
+            while(result.next()){
+                impressions.add(new Impression(
+                    result.getLong("id"),
+                    result.getString("path"),
+                    result.getLong("marble_id"),
+                    result.getInt("type")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return impressions;
     }
 }
