@@ -33,7 +33,8 @@ public class ImpressionRepositoryTest {
     void setUp() throws SQLException {
         conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
         String query = "CREATE TABLE IF NOT EXISTS impression (" + 
-                            "path       text PRIMARY KEY," + 
+                            "id         integer PRIMARY KEY," + 
+                            "path       text NOT NULL," + 
                             "marble_id  integer NOT NULL," + 
                             "type       integer NOT NULL" + 
                         ");";
@@ -69,27 +70,28 @@ public class ImpressionRepositoryTest {
         
         @Test
         void testDelete() {
-            assertTrue(impressionRepository.delete("path1"));
-            assertTrue(impressionRepository.delete("path2"));
+            assertTrue(impressionRepository.delete(1L));
+            assertTrue(impressionRepository.delete(2L));
         }
 
         @Test
         void testDeleteReturnFalse() {
-            assertFalse(impressionRepository.delete("path3"));
+            assertFalse(impressionRepository.delete(3L));
         }
 
         @Test
         void testIfDeleteCorrectly() throws SQLException {
             // before delete
-            String query = "SELECT * FROM impression WHERE path=1;";
+            String query = "SELECT * FROM impression WHERE id=1;";
             Statement statement = conn.createStatement();
             ResultSet rs = statement.executeQuery(query);
             while(rs.next()) {
-                assertEquals("path1", rs.getString(1));
-                assertEquals(1, rs.getString(2));
-                assertEquals(1, rs.getLong(3));
+                assertEquals(1L, rs.getLong(1));
+                assertEquals("path1", rs.getString(2));
+                assertEquals(1L, rs.getLong(3));
+                assertEquals(1, rs.getInt(4));
             }
-            impressionRepository.delete("path1");
+            impressionRepository.delete(1L);
 
             // after delete
             rs = statement.executeQuery(query);
@@ -99,7 +101,7 @@ public class ImpressionRepositoryTest {
 
     @Test
     void testFind() {
-        assertEquals(new Impression("path1", 1L, 1), impressionRepository.find("path1"));
+        assertEquals(new Impression(1L, "path1", 1L, 1), impressionRepository.find(1L));
     }
 
     @Test
@@ -109,7 +111,12 @@ public class ImpressionRepositoryTest {
         Statement statement = conn.createStatement();
         ResultSet rs = statement.executeQuery(query);
         while(rs.next()) {
-            expected.add(new Impression(rs.getString(1), rs.getLong(2), rs.getInt(3)));
+            expected.add(new Impression(
+                rs.getLong(1),
+                rs.getString(2),
+                rs.getLong(3), 
+                rs.getInt(4)
+            ));
         }
         assertEquals(expected, impressionRepository.findAll());
     }
@@ -127,12 +134,15 @@ public class ImpressionRepositoryTest {
         @Test
         void testInsertCorrectly() throws SQLException {
             impressionRepository.insert(new Impression("path3", 3L, 3));
-            String query = "SELECT path FROM impression WHERE path=?";
+            String query = "SELECT * FROM impression WHERE id=?";
             PreparedStatement statement = conn.prepareStatement(query);
-            statement.setString(1, "paht3");
+            statement.setLong(1, 3L);
             ResultSet rs = statement.executeQuery();
             while(rs.next()) {
-                assertEquals("path3", rs.getString(1));
+                assertEquals(3L, rs.getLong(1));
+                assertEquals("path3", rs.getString(2));
+                assertEquals(3L, rs.getLong(3));
+                assertEquals(3, rs.getInt(4));
             }
         }
     }
@@ -143,7 +153,7 @@ public class ImpressionRepositoryTest {
         @Test
         void testUpdateReturnTrue() {
             assertTrue(impressionRepository.update(
-                new Impression("path2", 2L, 2)));
+                new Impression(2L, "path2", 2L, 2)));
         }
 
         @Test
@@ -151,11 +161,13 @@ public class ImpressionRepositoryTest {
             Impression impression = null;
 
             // update
+            String updatedPath = "path2_updated";
             Long updatedMarbleId = 123L;
             int updatedType = 123;
 
             impression = new Impression(
-                "path2",
+                2L,
+                updatedPath,
                 updatedMarbleId,
                 updatedType
             );
@@ -165,13 +177,22 @@ public class ImpressionRepositoryTest {
 
             // after update
             Statement statement = conn.createStatement();
-            ResultSet rs = statement.executeQuery("SELECT * FROM impression WHERE path=\"path2\";");
+            ResultSet rs = statement.executeQuery("SELECT * FROM impression WHERE id=2;");
             while(rs.next()) {
-                assertEquals(rs.getLong(2), updatedMarbleId);
-                assertEquals(rs.getInt(3), updatedType);
+                assertEquals(rs.getString(2), updatedPath);
+                assertEquals(rs.getLong(3), updatedMarbleId);
+                assertEquals(rs.getInt(4), updatedType);
             }
 
         }
+    }
+
+    @Test
+    void testGetImpressionsByMarbleId() {
+        List<Impression> expected = new LinkedList<>();
+        Impression impression = new Impression(1L, "path1", 1L, 1);
+        expected.add(impression);
+        assertEquals(expected, impressionRepository.getImpressionsByMarbleId(1L));
     }
 
 }
