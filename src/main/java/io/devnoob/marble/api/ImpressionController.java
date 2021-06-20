@@ -11,12 +11,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.devnoob.marble.Service.FileUploadService;
 import io.devnoob.marble.persistence.entity.Impression;
 import io.devnoob.marble.persistence.repo.ImpressionRepository;
 
@@ -26,6 +25,9 @@ public class ImpressionController {
     
     @Autowired
     ImpressionRepository impressionRepository;
+
+    @Autowired
+    FileUploadService fileUploadService;
 
     @PostConstruct
     public void init() {
@@ -41,7 +43,17 @@ public class ImpressionController {
         return impressionRepository.getImpressionsByMarbleId(marble_id);
     }
 
-    @DeleteMapping("{impression_id}")
+    @PostMapping("/")
+    public boolean createImpression(
+        @RequestParam MultipartFile file,
+        @RequestParam Long marbleId,
+        @RequestParam int type
+    ) {
+        String path = fileUploadService.uploadFile(file, marbleId, type);
+        return impressionRepository.insert(new Impression(path, marbleId, type));
+    }
+
+    @DeleteMapping("/{impression_id}")
     public boolean deleteImpression(@PathVariable Long impression_id) {
         return impressionRepository.delete(impression_id);
     }
