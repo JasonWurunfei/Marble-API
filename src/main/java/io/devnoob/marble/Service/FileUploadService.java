@@ -3,23 +3,18 @@ package io.devnoob.marble.Service;
 import java.io.File;
 import java.io.IOException;
 
-import org.springframework.beans.factory.annotation.Value;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import io.devnoob.marble.config.FileUploadConfiguration;
+import static io.devnoob.marble.config.FileUploadConfiguration.*;
 
 @Service
 public class FileUploadService {
 
-    @Value("${upload.dir}")
-    private String uploadDir;
-
-    public String getUploadDir() {
-        return uploadDir;
-    }
-
-    public void setUploadDir(String uploadDir) {
-        this.uploadDir = uploadDir;
-    }
+    @Autowired
+    FileUploadConfiguration FileUploadConfiguration;
 
     public String uploadFile(MultipartFile file, Long marbleId, int type) {
         String filePath = String.format("%s-%d-%d.%s",
@@ -28,8 +23,20 @@ public class FileUploadService {
             System.currentTimeMillis(),
             getExtension(file.getOriginalFilename())
         );
-        filePath = this.uploadDir + filePath;
-        File dest = new File(filePath);
+        
+        switch(type) {
+            case VEDIO_TYPE:
+                filePath = "video/" + filePath;
+                break;
+            case IMAGE_TYPE:
+                filePath = "image/" + filePath;
+                break;
+            case AUDIO_TYPE:
+                filePath = "audio/" + filePath;
+                break;
+        }
+
+        File dest = new File(FileUploadConfiguration.getUploadDirPath() + filePath);
         try {
             file.transferTo(dest);
         } catch (IOException e) {

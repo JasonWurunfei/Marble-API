@@ -4,6 +4,7 @@ import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
 import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -12,12 +13,14 @@ import java.sql.SQLException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
@@ -50,6 +53,7 @@ public class ImpressionControllerIntegrationTest {
 
     private Connection conn;
     private String dbPath = "testDB.db";
+    private static String uploadDirPath = "test-upload";
 
     @BeforeEach
     void setUp() throws SQLException {
@@ -81,6 +85,32 @@ public class ImpressionControllerIntegrationTest {
         File db = new File(dbPath);
         if (db.exists()) {
             db.delete();
+        }
+    }
+
+    static void deleteDirectoryRecursion(File file) throws IOException {
+        if (file.isDirectory()) {
+          File[] entries = file.listFiles();
+          if (entries != null) {
+            for (File entry : entries) {
+                deleteDirectoryRecursion(entry);
+            }
+          }
+        }
+        if (!file.delete()) {
+          throw new IOException("Failed to delete " + file);
+        }
+      }
+
+    @AfterAll
+    public static void removeTestDir() {
+        File uploadDir = new File(uploadDirPath);
+        if (uploadDir.exists()) {
+            try {
+                deleteDirectoryRecursion(uploadDir);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
