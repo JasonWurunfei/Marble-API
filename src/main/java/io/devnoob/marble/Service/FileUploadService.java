@@ -42,11 +42,15 @@ public class FileUploadService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return filePath;
+        return getURL(filePath);
     }
 
     public String getExtension(String fileName) {
         return fileName.substring(fileName.lastIndexOf(".")+1);
+    }
+
+    private String getURL(String filePath) {
+        return FileUploadConfiguration.getUploadPath()+filePath;
     }
 
 }
