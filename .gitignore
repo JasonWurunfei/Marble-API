@@ -35,3 +35,6 @@ build/
 # databases
 database.db
 database.db*
+
+*.tar
+test-upload/
