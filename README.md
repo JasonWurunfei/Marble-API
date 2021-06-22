@@ -2,7 +2,7 @@
 
 > Impression over Translation
 
-
+Version 0.1 
 
 ## 介绍
 
@@ -16,3 +16,43 @@ Marble 名字的灵感来自于：
 
 - 每一次积累都像是一颗弹珠收入囊中
 
+
+
+## API 介绍
+
+### 用户
+
+1. 获取用户数据 GET api/user/{user_id}
+
+### Marble
+
+1. 获取特定Marble的数据 GET api/marble/{marble_id}
+2. 获取特定用户的所有Marble GET api/marble/user/{user_id}
+3. 创建新的Marble POST api/marble
+4. 修改编辑特定Marble的数据 PUT api/marble/{marble_id}
+5. 删除Marble的数据 DELETE api/marble/{marble_id}
+6. 批量删除Marble DELETE api/marble/batchremove/
+
+### Bag
+
+1. 获取特定用户的所有Bag的数据 GET api/bag/user/{user_id} 
+2. 获取特定Bag的所有Marble api/bag/marble/{bag_id}
+3. 创建新的Bag POST api/bag
+4. 修改编辑特定Bag的数据 PUT api/bag/{bag_id}
+5. 删除Bag的数据 DELETE api/bag/{bag_id}
+6. 批量删除Bag DELETE api/bag/batchremove/
+
+### Impression
+
+> type:
+>
+> 1 视频
+>
+> 2 图片
+>
+> 3 音频
+
+1. 获取特定Marble的所有Impression GET api/impression/marble/{marble_id}
+2. 创建新的Impression POST api/impression
+3. 删除Impression 的数据 DELETE api/impression/{impression_id}
+4. 批量删除Impression DELETE api/impression/batchremove/

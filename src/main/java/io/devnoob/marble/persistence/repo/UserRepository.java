@@ -93,5 +93,20 @@ public class UserRepository extends DataRepository<User, Long> {
         }
         return isSuccess;
     }
+
+    @Override
+    public boolean update(User obj) {
+        boolean isSuccess = false;
+        try {
+            String query = "UPDATE user SET username=? WHERE id=?;";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, obj.getUsername());
+            statement.setLong(2, obj.getId());
+            isSuccess = statement.executeUpdate() == 1;
+        } catch (SQLException error) {
+            error.printStackTrace();
+        }
+        return isSuccess;
+    }
     
 }

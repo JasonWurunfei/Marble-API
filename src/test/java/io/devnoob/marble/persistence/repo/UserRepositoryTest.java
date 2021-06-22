@@ -135,4 +135,31 @@ public class UserRepositoryTest {
         }
         assertEquals(expected, userRepository.findAll());
     }
+
+    @Nested
+    @DisplayName("Test update method")
+    class TestUpdate {
+        @Test
+        void testUpdateReturnTrue() {
+            assertTrue(userRepository.update(new User(1L, "test_name")));
+        }
+
+        @Test
+        void testIfUpdateCorrectly() throws SQLException {
+            User user = null;
+           
+            // update
+            String updatedName = "test_name";
+
+            user = new User(1L, updatedName);
+            userRepository.update(user);
+
+            // after update
+            Statement statement = conn.createStatement();
+            ResultSet rs = statement.executeQuery("SELECT * FROM user WHERE id=1;");
+            while(rs.next()) {
+                assertEquals(rs.getString(2), updatedName);
+            }
+        }
+    }
 }
