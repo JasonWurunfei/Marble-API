@@ -157,4 +157,31 @@ public class UserControllerIntegrationTest {
             assertEquals(rs.getString(2), updatedUser.getUsername());
         }
     }
+
+    @Nested
+    @DisplayName("Test Login User API")
+    class testLogin {
+        @Test
+        @DisplayName("When login success")
+        void testLoginWhenLoginSuccess() throws Exception {
+            String username = "test_user1";
+            User user = new User(1L, username);
+
+            
+            String url = "/api/user/login?username=" + username;
+            MvcResult mvcResult = mockMvc.perform(get(url)).andReturn();
+            String actualJsonResponse = mvcResult.getResponse().getContentAsString();
+            String expectedJsonResponse = objectMapper.writeValueAsString(user);
+            assertEquals(expectedJsonResponse, actualJsonResponse);
+        }
+
+        @Test
+        @DisplayName("When login fail")
+        void testLoginWhenLoginFail() throws Exception {
+            String username = "test_user666";
+            
+            String url = "/api/user/login?username=" + username;
+            mockMvc.perform(get(url)).andExpect(status().isUnauthorized());
+        }
+    }
 }

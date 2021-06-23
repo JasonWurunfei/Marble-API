@@ -115,4 +115,38 @@ public class UserControllerTest {
 
         Mockito.verify(userRepository, times(1)).update(updatedUser);
     }
+
+    @Nested
+    @DisplayName("Test Login User API")
+    class testLogin {
+        @Test
+        @DisplayName("When login success")
+        void testLoginWhenLoginSuccess() throws Exception {
+            String username = "test_user1";
+            User user = new User(1L, username);
+            Mockito.when(userRepository.find(username)).thenReturn(user);
+            
+            String url = "/api/user/login?username=" + username;
+            MvcResult mvcResult = mockMvc.perform(get(url)).andReturn();
+            String actualJsonResponse = mvcResult.getResponse().getContentAsString();
+            String expectedJsonResponse = objectMapper.writeValueAsString(user);
+            assertEquals(expectedJsonResponse, actualJsonResponse);
+    
+            Mockito.verify(userRepository, times(1)).find(username);
+        }
+
+        @Test
+        @DisplayName("When login fail")
+        void testLoginWhenLoginFail() throws Exception {
+            String username = "test_user2";
+            Mockito.when(userRepository.find(username)).thenReturn(null);
+            
+            String url = "/api/user/login?username=" + username;
+            mockMvc.perform(get(url)).andExpect(status().isUnauthorized());
+    
+            Mockito.verify(userRepository, times(1)).find(username);
+        }
+    }
+
+    
 }

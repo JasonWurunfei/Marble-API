@@ -23,6 +23,7 @@ Marble 名字的灵感来自于：
 ### 用户
 
 1. 获取用户数据 GET api/user/{user_id}
+2. 用户登录 GET api/user/login?username={username}
 
 ### Marble
 

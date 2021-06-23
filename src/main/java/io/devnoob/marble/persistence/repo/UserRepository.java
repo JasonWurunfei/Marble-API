@@ -43,6 +43,25 @@ public class UserRepository extends DataRepository<User, Long> {
         }
         return user;
     }
+
+    public User find(String username) {
+        User user = null;
+        try {
+            String query = "SELECT * FROM user WHERE username=?;";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, username);
+            ResultSet result = statement.executeQuery();
+            while(result.next()) {
+                user = new User(
+                    result.getLong("id"), 
+                    result.getString("username")
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return user;
+    }
     
     @Override
     public List<User> findAll() {
