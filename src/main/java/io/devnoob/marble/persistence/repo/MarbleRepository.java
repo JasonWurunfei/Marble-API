@@ -150,4 +150,28 @@ public class MarbleRepository extends DataRepository<Marble, Long> {
         }
         return marbles; 
     }
+
+    public List<Marble> getLatestMarblesByUserId(Long id, int limit) {
+        List<Marble> latest_marbles = new LinkedList<>();
+        try {
+            String query = "SELECT * FROM marble WHERE user_id=? ORDER BY creation_time DESC LIMIT ?;";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setLong(1, id);
+            statement.setInt(2, limit);
+            ResultSet result = statement.executeQuery();
+            while(result.next()) {
+                latest_marbles.add(new Marble(
+                    result.getLong("id"), 
+                    result.getString("name"),
+                    result.getLong("user_id"),
+                    result.getTimestamp("creation_time"),
+                    result.getString("translation"),
+                    result.getString("story")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return latest_marbles; 
+    }
 }

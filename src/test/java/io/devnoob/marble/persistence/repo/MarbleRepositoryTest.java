@@ -202,4 +202,12 @@ public class MarbleRepositoryTest {
         expected.add(marble);
         assertEquals(expected, marbleRepository.getMarblesByUserId(1L));
     }
+
+    @Test
+    void testGetLatestMarblesByUserId() {
+        List<Marble> expected = new LinkedList<>();
+        Marble marble = new Marble(1L, "test_marble1", 1L, new Timestamp(1623917398), "marble1_test", "story_marble1");
+        expected.add(marble);
+        assertEquals(expected.size(), marbleRepository.getLatestMarblesByUserId(1L, 5).size());
+    }
 }

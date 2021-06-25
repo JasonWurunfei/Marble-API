@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.devnoob.marble.persistence.entity.Marble;
@@ -54,6 +55,12 @@ public class MarbleController {
     public List<Marble> getMarblesByUserId(@PathVariable Long user_id) {
         return marbleRepository.getMarblesByUserId(user_id);
     }
+
+    @GetMapping("/latest/{user_id}")
+    public List<Marble> getLatestMarblesByUserId(@PathVariable Long user_id, @RequestParam("limit") int limit) {
+        return marbleRepository.getLatestMarblesByUserId(user_id, limit);
+    }
+
 
     @PostMapping("/")
     public boolean createMarble(@RequestBody Marble marble) {

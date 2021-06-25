@@ -20,6 +20,7 @@ Marble 名字的灵感来自于：
 
 ## API 介绍
 
+
 ### 用户
 
 1. 获取用户数据 GET api/user/{user_id}
@@ -29,6 +30,7 @@ Marble 名字的灵感来自于：
 
 1. 获取特定Marble的数据 GET api/marble/{marble_id}
 2. 获取特定用户的所有Marble GET api/marble/user/{user_id}
+3. 获取特定用户的最新Marble GET api/marble/latest/{user_id}?limit={limit}
 3. 创建新的Marble POST api/marble
 4. 修改编辑特定Marble的数据 PUT api/marble/{marble_id}
 5. 删除Marble的数据 DELETE api/marble/{marble_id}
