@@ -157,6 +157,53 @@ public class MarbleControllerTest {
             assertEquals(expectedJsonResponse, actualJsonResponse); 
             Mockito.verify(marbleRepository, times(1)).getMarblesByUserId(1L);
         }
+
+        @Test
+        @DisplayName("Should return OK and in the form of DESC when user exist")
+        void getLatestMarblesByUserIdShouldReturnOkWhenUserExist() throws Exception {
+            List<Marble> marbles = new LinkedList<>();
+            marbles.add(new Marble(1L, "test_marble1", 1L, new Timestamp(1623917398), "marble1_test", "story_marble1"));
+            Mockito.when(marbleRepository.getLatestMarblesByUserId(1L, 2))
+                .thenReturn(marbles);
+
+            String url = "/api/marble/latest/1?limit=2";
+            mockMvc.perform(get(url)).andExpect(status().isOk());
+            Mockito.verify(marbleRepository, times(1)).getLatestMarblesByUserId(1L, 2);
+        }
+
+        @Test
+        @DisplayName("Should return OK and matchable number when user exist")
+        void getLatestMarblesByUserIdShouldReturnOkAndMatchableNumberWhenUserExist() throws Exception {
+            List<Marble> marbles = new LinkedList<>();
+            marbles.add(new Marble(1L, "test_marble1", 1L, new Timestamp(1623917398), "marble1_test", "story_marble1"));
+            marbles.add(new Marble(1L, "test_marble2", 1L, new Timestamp(1623917377), "marble2_test", "story_marble2"));
+            Mockito.when(marbleRepository.getLatestMarblesByUserId(1L, 2))
+                .thenReturn(marbles);
+
+            String url = "/api/marble/latest/1?limit=2";
+            MvcResult mvcResult = mockMvc.perform(get(url)).andReturn();
+            String actualJsonResponse = mvcResult.getResponse().getContentAsString();
+            String expectedJsonResponse = objectMapper.writeValueAsString(marbles);
+            assertEquals(expectedJsonResponse, actualJsonResponse);
+            Mockito.verify(marbleRepository, times(1)).getLatestMarblesByUserId(1L, 2);
+        }
+
+        @Test
+        @DisplayName("Should return OK and matchable number when user exist")
+        void getLatestMarblesByUserIdShouldReturnOkAndMatchableNumberWhenMore() throws Exception {
+            List<Marble> marbles = new LinkedList<>();
+            marbles.add(new Marble(1L, "test_marble1", 1L, new Timestamp(1623917398), "marble1_test", "story_marble1"));
+            marbles.add(new Marble(1L, "test_marble2", 1L, new Timestamp(1623917377), "marble2_test", "story_marble2"));
+            Mockito.when(marbleRepository.getLatestMarblesByUserId(1L, 100))
+                .thenReturn(marbles);
+
+            String url = "/api/marble/latest/1?limit=100";
+            MvcResult mvcResult = mockMvc.perform(get(url)).andReturn();
+            String actualJsonResponse = mvcResult.getResponse().getContentAsString();
+            String expectedJsonResponse = objectMapper.writeValueAsString(marbles);
+            assertEquals(expectedJsonResponse, actualJsonResponse);
+            Mockito.verify(marbleRepository, times(1)).getLatestMarblesByUserId(1L, 100);
+        }
     }
 
     @Test
