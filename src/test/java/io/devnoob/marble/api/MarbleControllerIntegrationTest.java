@@ -91,8 +91,7 @@ public class MarbleControllerIntegrationTest {
 
     @Test
     void testCreateMarble() throws Exception {
-        Marble newMarble = new Marble(3L, "test_marble3", 1L, new Timestamp(1723917398), "marble3_test", "story_marble3");
-        newMarble = new Marble(4L, "test_marble4", 1L, new Timestamp(1623917398), "marble4_test", "story_marble44L");
+        Marble newMarble = new Marble(4L, "test_marble4", 1L, new Timestamp(1623917398), "marble4_test", "story_marble4");
         String url = "/api/marble/";
         mockMvc.perform(
             post(url)

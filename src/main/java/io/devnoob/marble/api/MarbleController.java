@@ -1,6 +1,5 @@
 package io.devnoob.marble.api;
 
-import java.io.Console;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -76,7 +75,10 @@ public class MarbleController {
     @PostMapping("/")
     public ResponseEntity<Marble> createMarble(@RequestBody Marble marble) {
         if(marbleRepository.insert(marble))
-            return new ResponseEntity<>(marbleRepository.getLatestMarblesByUserId(marble.getUserId(), 1).get(0), HttpStatus.OK);
+            return new ResponseEntity<>(marbleRepository.getLatestMarblesByUserId(
+                marble.getUserId(), 1).get(0), 
+                HttpStatus.OK
+            );
         else 
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
     }
