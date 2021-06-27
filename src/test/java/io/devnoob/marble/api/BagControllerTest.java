@@ -4,7 +4,6 @@ import java.sql.Timestamp;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.DisplayName;
@@ -23,7 +22,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import io.devnoob.marble.persistence.entity.Bag;
+import io.devnoob.marble.persistence.entity.Marble;
 import io.devnoob.marble.persistence.repo.BagRepository;
+import io.devnoob.marble.persistence.repo.MarbleBagRepository;
 
 @WebMvcTest(BagController.class)
 public class BagControllerTest {
@@ -36,6 +37,9 @@ public class BagControllerTest {
 
     @MockBean
     private BagRepository bagRepository;
+
+    @MockBean
+    private MarbleBagRepository marbleBagRepository;
 
     @Test
     void testBatchRemove() throws Exception {
@@ -85,48 +89,6 @@ public class BagControllerTest {
     }
 
     @Nested
-    @DisplayName("Test GetBagAPI")
-    class TestGetBagAPI {
-
-        @Test
-        @DisplayName("Should return ok when bag exists")
-        void getBagShouldReturnOkWhenBagExist() throws Exception {
-            Mockito.when(bagRepository.find(1L))
-                .thenReturn(new Bag(1L, 1L, "test_bag1", new Timestamp(1623917398)));
-    
-            String url = "/api/bag/marble/1";
-            mockMvc.perform(get(url)).andExpect(status().isOk());
-            Mockito.verify(bagRepository, times(1)).find(1L);
-        }
-
-
-        @Test
-        @DisplayName("Should return 404 when user does not exist")
-        void getBagShouldReturn404WhenBagDoesNotExist() throws Exception {
-            Mockito.when(bagRepository.find(2L)).thenReturn(null);
-    
-            String url = "/api/bag/marble/2";
-            mockMvc.perform(get(url)).andExpect(status().isNotFound());
-            Mockito.verify(bagRepository, times(1)).find(2L);
-        }
-
-        @Test
-        @DisplayName("GetBag shoud return correct response body")
-        void getUserReturnCorrectResponseBody() throws Exception {
-            Bag bag = new Bag(1L, "test_bag1", new Timestamp(1623917398));
-            Mockito.when(bagRepository.find(1L))
-                .thenReturn(bag);
-    
-            String url = "/api/bag/marble/1";
-            MvcResult mvcResult = mockMvc.perform(get(url)).andReturn();
-            String actualJsonResponse = mvcResult.getResponse().getContentAsString();
-            String expectedJsonResponse = objectMapper.writeValueAsString(bag);
-            assertEquals(expectedJsonResponse, actualJsonResponse);
-            Mockito.verify(bagRepository, times(1)).find(1L);
-        }
-    }
-
-    @Nested
     @DisplayName("Test get bags by given user_id API")
     class TestGetBagsByUserId {
 
@@ -161,7 +123,7 @@ public class BagControllerTest {
 
 
     @Test
-    void testUpdateBag() throws JsonProcessingException, Exception {
+    void testUpdateBag() throws Exception {
         Bag updatedBag = new Bag(1L, 1L, "test_bag1", new Timestamp(1623917398));
         Mockito.when(bagRepository.update(updatedBag)).thenReturn(true);
 
@@ -174,5 +136,63 @@ public class BagControllerTest {
         .andExpect(content().string("true"));
 
         Mockito.verify(bagRepository, times(1)).update(updatedBag);
+    }
+
+    @Nested
+    @DisplayName("Test get marbles by given bag id API")
+    class TestGetMarbleByBagId {
+        @Test
+        @DisplayName("Should return 200 OK if bag id is valid")
+        void shouldReturn200OKIfBagIdIsValid() throws Exception {
+            Bag bag = new Bag(1L, 1L, "test_bag1", new Timestamp(1623917398));
+            Mockito.when(bagRepository.find(1L)).thenReturn(bag);
+            Marble marble = new Marble(
+                1L, "test_marble1", 1L, new Timestamp(1623917420), "marble1_test", "story_marble1");
+            List<Marble> marbles = new LinkedList<>();
+            marbles.add(marble);
+            Mockito.when(marbleBagRepository.getMarbleByBagId(1L)).thenReturn(marbles);
+
+            String url = "/api/bag/marbles/1";
+            mockMvc.perform(get(url)).andExpect(status().isOk());
+            Mockito.verify(bagRepository, times(1)).find(1L);
+            Mockito.verify(marbleBagRepository, times(1)).getMarbleByBagId(1L);
+        }
+
+        @Test
+        @DisplayName("Should return 404 not found if bag id is not valid")
+        void shouldReturn404NotFoundIfBagIdIsNotValid() throws Exception {
+            Mockito.when(bagRepository.find(100L)).thenReturn(null);
+            Marble marble = new Marble(
+                1L, "test_marble1", 1L, new Timestamp(1623917420), "marble1_test", "story_marble1");
+            List<Marble> marbles = new LinkedList<>();
+            marbles.add(marble);
+            Mockito.when(marbleBagRepository.getMarbleByBagId(100L)).thenReturn(marbles);
+
+            String url = "/api/bag/marbles/100";
+            mockMvc.perform(get(url)).andExpect(status().isNotFound());
+            Mockito.verify(bagRepository, times(1)).find(100L);
+            Mockito.verify(marbleBagRepository, times(0)).getMarbleByBagId(100L);
+        }
+
+        @Test
+        @DisplayName("Should return correct marble list")
+        void shouldReturnCorrectMarbles() throws Exception {
+            Bag bag = new Bag(1L, 1L, "test_bag1", new Timestamp(1623917398));
+            Mockito.when(bagRepository.find(1L)).thenReturn(bag);
+            Marble marble = new Marble(
+                1L, "test_marble1", 1L, new Timestamp(1623917420), "marble1_test", "story_marble1");
+            List<Marble> marbles = new LinkedList<>();
+            marbles.add(marble);
+            Mockito.when(marbleBagRepository.getMarbleByBagId(1L)).thenReturn(marbles);
+
+            String url = "/api/bag/marbles/1";
+            MvcResult mvcResult = mockMvc.perform(get(url)).andReturn();
+            String actualJsonResponse = mvcResult.getResponse().getContentAsString();
+            String expectedJsonResponse = objectMapper.writeValueAsString(marbles);
+            assertEquals(expectedJsonResponse, actualJsonResponse); 
+            
+            Mockito.verify(bagRepository, times(1)).find(1L);
+            Mockito.verify(marbleBagRepository, times(1)).getMarbleByBagId(1L);
+        }
     }
 }

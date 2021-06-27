@@ -40,6 +40,16 @@ public class MarbleController {
                 new Marble("world", 1L, new Timestamp(System.currentTimeMillis()),
                  "世界", "我学编程的二个单词")
             );
+
+            marbleRepository.insert(
+                new Marble("Java", 1L, new Timestamp(System.currentTimeMillis()),
+                 "Java咖啡", "Java语言的由来")
+            );
+
+            marbleRepository.insert(
+                new Marble("Python", 1L, new Timestamp(System.currentTimeMillis()),
+                 "大蟒蛇", "Python 语言的图像")
+            );
         }
     }
 
@@ -57,7 +67,8 @@ public class MarbleController {
     }
 
     @GetMapping("/latest/{user_id}")
-    public List<Marble> getLatestMarblesByUserId(@PathVariable Long user_id, @RequestParam("limit") int limit) {
+    public List<Marble> getLatestMarblesByUserId(
+        @PathVariable Long user_id, @RequestParam("limit") int limit) {
         return marbleRepository.getLatestMarblesByUserId(user_id, limit);
     }
 

@@ -30,7 +30,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import io.devnoob.marble.persistence.entity.Bag;
+import io.devnoob.marble.persistence.entity.Marble;
 import io.devnoob.marble.persistence.repo.BagRepository;
+import io.devnoob.marble.persistence.repo.MarbleBagRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -41,9 +43,12 @@ public class BagControllerIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-
+    
     @Autowired
     private BagRepository bagRepository;
+
+    @Autowired
+    private MarbleBagRepository marbleBagRepository;
 
     private Connection conn;
     private String dbPath = "testDB.db";
@@ -51,32 +56,76 @@ public class BagControllerIntegrationTest {
     @BeforeEach
     void setUp() throws SQLException {
         conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
-        String query = "CREATE TABLE IF NOT EXISTS bag (" 
-                            + "id         integer PRIMARY KEY,"
-                            + "user_id    integer NOT NULL," 
-                            + "name       text NOT NULL," 
-                            + "creation_time   timestamp NOT NULL"
-                        + ");";
+        String sql = "CREATE TABLE IF NOT EXISTS marble_bag (" + 
+                            "id         integer PRIMARY KEY," + 
+                            "marble_id  integer NOT NULL," +
+                            "bag_id     integer NOT NULL" +
+                        ");";
         Statement statement = conn.createStatement();
-        statement.execute(query);
+        statement.execute(sql);
+        
+        String query;
+        query = "INSERT INTO marble_bag(marble_id, bag_id) VALUES(1, 1);";
+        statement.executeUpdate(query);
+        query = "INSERT INTO marble_bag(marble_id, bag_id) VALUES(2, 1);";
+        statement.executeUpdate(query);
+        query = "INSERT INTO marble_bag(marble_id, bag_id) VALUES(3, 1);";
+        statement.executeUpdate(query);
+        query = "INSERT INTO marble_bag(marble_id, bag_id) VALUES(3, 2);";
+        statement.executeUpdate(query);
+        query = "INSERT INTO marble_bag(marble_id, bag_id) VALUES(1, 2);";
+        statement.executeUpdate(query);
 
-        String query1 = "INSERT INTO bag(user_id, name, creation_time)" 
-                            + "VALUES(1,\"test_bag1\",1623917398);";
-        String query2 = "INSERT INTO bag(user_id, name, creation_time)"
-                            + "VALUES(2,\"test_bag2\",1623917480);";
+        sql ="CREATE TABLE IF NOT EXISTS bag (" 
+                + "id         integer PRIMARY KEY,"
+                + "user_id    integer NOT NULL," 
+                + "name       text NOT NULL," 
+                + "creation_time   timestamp NOT NULL"
+            + ");";
+        statement = conn.createStatement();
+        statement.execute(sql); 
 
-        statement.executeUpdate(query1);
-        statement.executeUpdate(query2);
+        query = "INSERT INTO bag(user_id, name, creation_time) VALUES(1,\"test_bag1\",1623917398);";
+        statement.executeUpdate(query);
+        query = "INSERT INTO bag(user_id, name, creation_time) VALUES(1,\"test_bag2\",1623917358);";
+        statement.executeUpdate(query);
+
+        sql = "CREATE TABLE IF NOT EXISTS marble (" + 
+                    "id             integer PRIMARY KEY," + 
+                    "name           text NOT NULL," + 
+                    "user_id        integer NOT NULL," + 
+                    "creation_time  timestamp NOT NULL," +
+                    "translation    text NOT NULL," +
+                    "story          text NOT NULL" +   
+              ");";
+        statement = conn.createStatement();
+        statement.execute(sql); 
+
+        query = "INSERT INTO marble(name, user_id, creation_time, translation, story) "+
+            "VALUES(\"test_marble1\", 1, 1623917398, \"marble1_test\", \"story_marble1\");";
+        statement.executeUpdate(query);
+        query = "INSERT INTO marble(name, user_id, creation_time, translation, story) "+
+            "VALUES(\"test_marble2\", 2, 1623917480, \"marble2_test\", \"story_marble2\");";
+        statement.executeUpdate(query);
+        query = "INSERT INTO marble(name, user_id, creation_time, translation, story) "+
+            "VALUES(\"test_marble3\", 2, 1623912280, \"marble3_test\", \"story_marble3\");";
+        statement.executeUpdate(query);
+
         statement.close();
+
 
         bagRepository.setDbPath(dbPath);
         bagRepository.connect();
+        
+        marbleBagRepository.setDbPath(dbPath);
+        marbleBagRepository.connect();
     }
 
     @AfterEach
     void cleanUp() throws SQLException {
         conn.close();
         bagRepository.close();
+        marbleBagRepository.close();
         File db = new File(dbPath);
         if (db.exists()) {
             db.delete();
@@ -101,7 +150,7 @@ public class BagControllerIntegrationTest {
         while(rs.next()) {
             assertEquals(3L, rs.getLong(1));
             assertEquals(1L,  rs.getLong(2));
-            assertEquals(new Timestamp(1623917399), rs.getTimestamp(4));
+            assertEquals(newBag.getCreationTime(), rs.getTimestamp(4));
         }
     }
 
@@ -116,36 +165,6 @@ public class BagControllerIntegrationTest {
         Statement statement = conn.createStatement();
         ResultSet rs = statement.executeQuery(query);
         assertFalse(rs.next());
-    }
-
-    @Nested
-    @DisplayName("Test GetBagAPI")
-    class TestGetBagAPI {
-        
-        @Test
-        @DisplayName("Should return ok when bag exists")
-        void getBagShouldReturnOkWhenBagExist() throws Exception {
-            String url = "/api/bag/marble/1";
-            mockMvc.perform(get(url)).andExpect(status().isOk());
-        }
-
-        @Test
-        @DisplayName("Should return 404 when bag does not exist")
-        void getBagShouldReturn404WhenBagDoesNotExist() throws Exception {
-            String url = "/api/bag/marble/3";
-            mockMvc.perform(get(url)).andExpect(status().isNotFound());
-        }
-
-        @Test
-        @DisplayName("GetBag shoud return correct response body")
-        void getBagReturnCorrectResponseBody() throws Exception {
-            Bag bag = new Bag(1L, 1L, "test_bag1", new Timestamp(1623917398));
-            String url = "/api/bag/marble/1";
-            MvcResult mvcResult = mockMvc.perform(get(url)).andReturn();
-            String actualJsonResponse = mvcResult.getResponse().getContentAsString();
-            String expectedJsonResponse = objectMapper.writeValueAsString(bag);
-            assertEquals(expectedJsonResponse, actualJsonResponse);
-        }
     }
 
     @Nested
@@ -164,7 +183,7 @@ public class BagControllerIntegrationTest {
         void getBagsByUserIdReturnCorrectResponseBody() throws Exception {
             List<Bag> bags = new LinkedList<>();
             bags.add(new Bag(1L, 1L, "test_bag1", new Timestamp(1623917398)));
-
+            bags.add(new Bag(2L, 1L, "test_bag2", new Timestamp(1623917358)));
             String url = "/api/bag/user/1";
             MvcResult mvcResult = mockMvc.perform(get(url)).andReturn();
             String actualJsonResponse = mvcResult.getResponse().getContentAsString();
@@ -188,9 +207,9 @@ public class BagControllerIntegrationTest {
         Statement statement = conn.createStatement();
         ResultSet rs = statement.executeQuery("SELECT * FROM bag WHERE id=1;");
         while(rs.next()) {
-            assertEquals(rs.getLong(2), updatedBag.getuserId());
+            assertEquals(rs.getLong(2), updatedBag.getUserId());
             assertEquals(rs.getString(3), updatedBag.getName());
-            assertEquals(rs.getTimestamp(4), updatedBag.getcreationTime());
+            assertEquals(rs.getTimestamp(4), updatedBag.getCreationTime());
         }
     }
 
@@ -215,5 +234,54 @@ public class BagControllerIntegrationTest {
         Statement statement2 = conn.createStatement();
         ResultSet rs = statement2.executeQuery(query2);
         assertFalse(rs.next());
+    }
+
+    @Nested
+    @DisplayName("Test get marbles by given bag id API")
+    class TestGetMarbleByBagId {
+        @Test
+        @DisplayName("Should return 200 OK if bag id is valid")
+        void shouldReturn200OKIfBagIdIsValid() throws Exception {
+            String url = "/api/bag/marbles/1";
+            mockMvc.perform(get(url)).andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("Should return 404 not found if bag id is not valid")
+        void shouldReturn404NotFoundIfBagIdIsNotValid() throws Exception {
+            String url = "/api/bag/marbles/100";
+            mockMvc.perform(get(url)).andExpect(status().isNotFound());
+        }
+
+        @Test
+        @DisplayName("Should return correct marble list")
+        void shouldReturnCorrectMarbles() throws Exception {
+
+            Marble marble1 = new Marble(1L, "test_marble1", 1L, new Timestamp(1623917398), "marble1_test", "story_marble1");
+            Marble marble2 = new Marble(2L, "test_marble2", 2L, new Timestamp(1623917480), "marble2_test", "story_marble2");
+            Marble marble3 = new Marble(3L, "test_marble3", 2L, new Timestamp(1623912280), "marble3_test", "story_marble3");
+
+            List<Marble> expected = new LinkedList<>();
+            expected.add(marble1);
+            expected.add(marble2);
+            expected.add(marble3);
+
+            String url = "/api/bag/marbles/1";
+            MvcResult mvcResult = mockMvc.perform(get(url)).andReturn();
+            String actualJsonResponse = mvcResult.getResponse().getContentAsString();
+            String expectedJsonResponse = objectMapper.writeValueAsString(expected);
+            assertEquals(expectedJsonResponse, actualJsonResponse); 
+
+
+            expected = new LinkedList<>();
+            expected.add(marble1);
+            expected.add(marble3);
+
+            url = "/api/bag/marbles/2";
+            mvcResult = mockMvc.perform(get(url)).andReturn();
+            actualJsonResponse = mvcResult.getResponse().getContentAsString();
+            expectedJsonResponse = objectMapper.writeValueAsString(expected);
+            assertEquals(expectedJsonResponse, actualJsonResponse); 
+        }
     }
 }

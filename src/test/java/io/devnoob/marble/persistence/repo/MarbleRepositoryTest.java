@@ -45,8 +45,10 @@ public class MarbleRepositoryTest {
         Statement statement = conn.createStatement();
         statement.execute(query);
 
-        String query1 = "INSERT INTO marble(name, user_id, creation_time, translation, story) VALUES(\"test_marble1\", 1, 1623917398, \"marble1_test\", \"story_marble1\");";
-        String query2 = "INSERT INTO marble(name, user_id, creation_time, translation, story) VALUES(\"test_marble2\", 2, 1623917480, \"marble2_test\", \"story_marble2\");";
+        String query1 = "INSERT INTO marble(name, user_id, creation_time, translation, story) "+
+            "VALUES(\"test_marble1\", 1, 1623917398, \"marble1_test\", \"story_marble1\");";
+        String query2 = "INSERT INTO marble(name, user_id, creation_time, translation, story) "+
+            "VALUES(\"test_marble2\", 2, 1623917480, \"marble2_test\", \"story_marble2\");";
         
         statement.executeUpdate(query1);
         statement.executeUpdate(query2);
