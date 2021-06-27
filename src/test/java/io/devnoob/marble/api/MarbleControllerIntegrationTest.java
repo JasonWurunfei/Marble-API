@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -62,11 +63,16 @@ public class MarbleControllerIntegrationTest {
         Statement statement = conn.createStatement();
         statement.execute(query);
 
-        String query1 = "INSERT INTO marble(name, user_id, creation_time, translation, story) VALUES(\"test_marble1\", 1, 1623917398, \"marble1_test\", \"story_marble1\");";
-        String query2 = "INSERT INTO marble(name, user_id, creation_time, translation, story) VALUES(\"test_marble2\", 2, 1623917480, \"marble2_test\", \"story_marble2\");";
+        String query1 = "INSERT INTO marble(name, user_id, creation_time, translation, story) " +
+            "VALUES(\"test_marble1\", 1, 1623917398, \"marble1_test\", \"story_marble1\");";
+        String query2 = "INSERT INTO marble(name, user_id, creation_time, translation, story) " +
+            "VALUES(\"test_marble2\", 2, 1623927480, \"marble2_test\", \"story_marble2\");";
+        String query3 = "INSERT INTO marble(name, user_id, creation_time, translation, story) " +
+            "VALUES(\"test_marble3\", 2, 1623927481, \"marble3_test\", \"story_marble3\");";
         
         statement.executeUpdate(query1);
         statement.executeUpdate(query2);
+        statement.executeUpdate(query3);
         statement.close();
         
         marbleRepository.setDbPath(dbPath);
@@ -86,16 +92,25 @@ public class MarbleControllerIntegrationTest {
     @Test
     void testCreateMarble() throws Exception {
         Marble newMarble = new Marble(3L, "test_marble3", 1L, new Timestamp(1723917398), "marble3_test", "story_marble3");
+        newMarble = new Marble(4L, "test_marble4", 1L, new Timestamp(1623917398), "marble4_test", "story_marble44L");
         String url = "/api/marble/";
-        MvcResult mvcResult = mockMvc.perform(
+        mockMvc.perform(
             post(url)
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(newMarble))
         ).andExpect(status().isOk()).andReturn();
 
-        String actualJsonResponse = mvcResult.getResponse().getContentAsString();
-        String expectedJsonResponse = objectMapper.writeValueAsString(newMarble);
-        assertEquals(expectedJsonResponse, actualJsonResponse);
+        String query = "SELECT * FROM marble WHERE name=?;";
+        PreparedStatement statement = conn.prepareStatement(query);
+        statement.setString(1, "test_marlble3");
+        ResultSet rs = statement.executeQuery();
+        while(rs.next()) {
+            assertEquals(newMarble.getId(), rs.getLong(1));
+            assertEquals(newMarble.getUserId(),  rs.getLong(3));
+            assertEquals(newMarble.getCreationTime(), rs.getTimestamp(4));
+            assertEquals(newMarble.getTranslation(), rs.getString(5));
+            assertEquals(newMarble.getStory(), rs.getString(6));
+        }
     }
 
     @Test
@@ -125,7 +140,7 @@ public class MarbleControllerIntegrationTest {
         @Test
         @DisplayName("Should return 404 when marble does not exist")
         void getMarbleShouldReturn404WhenMarbleDoesNotExist() throws Exception {
-            String url = "/api/marble/3";
+            String url = "/api/marble/100";
             mockMvc.perform(get(url)).andExpect(status().isNotFound());
         }
 
@@ -163,36 +178,77 @@ public class MarbleControllerIntegrationTest {
             String expectedJsonResponse = objectMapper.writeValueAsString(marbles);
             assertEquals(expectedJsonResponse, actualJsonResponse); 
         }
+    }
 
+    @Nested
+    @DisplayName("Test get latest marbles by given user_id API")
+    class TestGetLatestMarblesByUserId {
         @Test
-        @DisplayName("Should return OK and in the form of DESC when user exist")
-        void getLatestMarblesByUserIdShouldReturnOkWhenUserExist() throws Exception {
+        @DisplayName("Should return OK when user exist")
+        void shouldReturnOKWhenUserExist() throws Exception {
             String url = "/api/marble/latest/1?limit=2";
             mockMvc.perform(get(url)).andExpect(status().isOk());
         }
 
         @Test
-        @DisplayName("Get marbles shoud return correct response body")
-        void getLatestMarblesByUserIdShouldReturnOkAndMatchableNumberWhenUserExist() throws Exception {
+        @DisplayName("Should return marbles in descending order by creation time")
+        void shouldReturnMarblesInDescendingOrderByCreationTime() throws Exception {
+            Marble marble2 = new Marble(2L, "test_marble2", 2L, new Timestamp(1623927480), "marble2_test", "story_marble2");
+            Marble marble3 = new Marble(3L, "test_marble3", 2L, new Timestamp(1623927481), "marble3_test", "story_marble3");
             List<Marble> marbles = new LinkedList<>();
-            marbles.add(new Marble(1L, "test_marble1", 1L, new Timestamp(1623917398), "marble1_test", "story_marble1"));
-            marbles.add(new Marble(1L, "test_marble2", 1L, new Timestamp(1623917377), "marble2_test", "story_marble2"));
+            
+            marbles.add(marble2);
+            marbles.add(marble3);
 
-            String url = "/api/marble/latest/1?limit=2";
+            String url = "/api/marble/latest/2?limit=2";
             MvcResult mvcResult = mockMvc.perform(get(url)).andReturn();
             String actualJsonResponse = mvcResult.getResponse().getContentAsString();
+            
             String expectedJsonResponse = objectMapper.writeValueAsString(marbles);
+            assertNotEquals(expectedJsonResponse, actualJsonResponse, 
+                "Two List is not equal because marble3 should have index of 1 " +
+                "since it was created later than marble2");
+            
+            marbles = new LinkedList<>();
+        
+            marbles.add(marble3);
+            marbles.add(marble2);
+            expectedJsonResponse = objectMapper.writeValueAsString(marbles);
             assertEquals(expectedJsonResponse, actualJsonResponse);
         }
 
         @Test
-        @DisplayName("Should return OK and matchable number when user exist")
-        void getLatestMarblesByUserIdShouldReturnOkAndMatchableNumberWhenMore() throws Exception {
+        @DisplayName("Should return desired number of latest marbles")
+        void shouldReturnDesiredNumberOfLatestMarbles() throws Exception {
+            Marble marble2 = new Marble(2L, "test_marble2", 2L, new Timestamp(1623927480), "marble2_test", "story_marble2");
+            Marble marble3 = new Marble(3L, "test_marble3", 2L, new Timestamp(1623927481), "marble3_test", "story_marble3");
             List<Marble> marbles = new LinkedList<>();
-            marbles.add(new Marble(1L, "test_marble1", 1L, new Timestamp(1623917398), "marble1_test", "story_marble1"));
-            marbles.add(new Marble(1L, "test_marble2", 1L, new Timestamp(1623917377), "marble2_test", "story_marble2"));
+            marbles.add(marble3);
 
-            String url = "/api/marble/latest/1?limit=100";
+            String url = "/api/marble/latest/2?limit=1";
+            MvcResult mvcResult = mockMvc.perform(get(url)).andReturn();
+            String actualJsonResponse = mvcResult.getResponse().getContentAsString();
+            String expectedJsonResponse = objectMapper.writeValueAsString(marbles);
+            assertEquals(expectedJsonResponse, actualJsonResponse);
+
+            marbles.add(marble2);
+            url = "/api/marble/latest/2?limit=2";
+            mvcResult = mockMvc.perform(get(url)).andReturn();
+            actualJsonResponse = mvcResult.getResponse().getContentAsString();
+            expectedJsonResponse = objectMapper.writeValueAsString(marbles);
+            assertEquals(expectedJsonResponse, actualJsonResponse);
+        }
+
+        @Test
+        @DisplayName("Should return all marbles of the user when the desired number of marbles exceeds the total number")
+        void shouldReturnAllMarblesOfTheUserWhenTheDesiredNumberOfMarblesExceedsTheTotalNumber() throws Exception {
+            Marble marble2 = new Marble(2L, "test_marble2", 2L, new Timestamp(1623927480), "marble2_test", "story_marble2");
+            Marble marble3 = new Marble(3L, "test_marble3", 2L, new Timestamp(1623927481), "marble3_test", "story_marble3");
+            List<Marble> marbles = new LinkedList<>();
+            marbles.add(marble3);
+            marbles.add(marble2);
+
+            String url = "/api/marble/latest/2?limit=100";
             MvcResult mvcResult = mockMvc.perform(get(url)).andReturn();
             String actualJsonResponse = mvcResult.getResponse().getContentAsString();
             String expectedJsonResponse = objectMapper.writeValueAsString(marbles);

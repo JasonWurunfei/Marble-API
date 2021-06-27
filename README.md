@@ -39,7 +39,7 @@ Marble 名字的灵感来自于：
 ### Bag
 
 1. 获取特定用户的所有Bag的数据 GET api/bag/user/{user_id} 
-2. 获取特定Bag的所有Marble api/bag/marble/{bag_id}
+2. 获取特定Bag的所有Marble api/bag/marbles/{bag_id}
 3. 创建新的Bag POST api/bag
 4. 修改编辑特定Bag的数据 PUT api/bag/{bag_id}
 5. 删除Bag的数据 DELETE api/bag/{bag_id}

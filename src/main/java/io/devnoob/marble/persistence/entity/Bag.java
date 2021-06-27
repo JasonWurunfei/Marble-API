@@ -33,11 +33,11 @@ public class Bag {
         this.id = id;
     }
 
-    public Long getuserId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public void setuserId(Long userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 
@@ -49,11 +49,11 @@ public class Bag {
         this.name = name;
     }
 
-    public Timestamp getcreationTime() {
+    public Timestamp getCreationTime() {
         return creationTime;
     }
 
-    public void setcreationTime(Timestamp creationTime) {
+    public void setCreationTime(Timestamp creationTime) {
         this.creationTime = creationTime;
     }
 

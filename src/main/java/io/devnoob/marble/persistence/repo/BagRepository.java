@@ -76,9 +76,9 @@ public class BagRepository extends DataRepository<Bag, Long> {
         try {
             String query = "INSERT INTO bag(user_id, name, creation_time) VALUES(?,?,?);";
             PreparedStatement statement = connection.prepareStatement(query);
-            statement.setLong(1, obj.getuserId());
+            statement.setLong(1, obj.getUserId());
             statement.setString(2, obj.getName());
-            statement.setTimestamp(3, obj.getcreationTime());
+            statement.setTimestamp(3, obj.getCreationTime());
 
             isSuccess = statement.executeUpdate() == 1;
         } catch (SQLException error) {
@@ -107,11 +107,11 @@ public class BagRepository extends DataRepository<Bag, Long> {
         try {
             String query = "UPDATE bag SET user_id=?, name=?, creation_time=? WHERE id=?;";
             PreparedStatement statement = connection.prepareStatement(query);
-            statement.setLong(1, obj.getuserId());
+            statement.setLong(1, obj.getUserId());
             statement.setString(2, obj.getName());
-            statement.setTimestamp(3, obj.getcreationTime());
+            statement.setTimestamp(3, obj.getCreationTime());
             statement.setLong(4, obj.getId());
-
+            
             isSuccess = statement.executeUpdate() == 1;
         } catch (SQLException error) {
             error.printStackTrace();
