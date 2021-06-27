@@ -71,11 +71,16 @@ public class MarbleController {
         @PathVariable Long user_id, @RequestParam("limit") int limit) {
         return marbleRepository.getLatestMarblesByUserId(user_id, limit);
     }
-
-
+    
     @PostMapping("/")
-    public boolean createMarble(@RequestBody Marble marble) {
-        return marbleRepository.insert(marble);
+    public ResponseEntity<Marble> createMarble(@RequestBody Marble marble) {
+        if(marbleRepository.insert(marble))
+            return new ResponseEntity<>(marbleRepository.getLatestMarblesByUserId(
+                marble.getUserId(), 1).get(0), 
+                HttpStatus.OK
+            );
+        else 
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
     }
 
     @PutMapping("/")

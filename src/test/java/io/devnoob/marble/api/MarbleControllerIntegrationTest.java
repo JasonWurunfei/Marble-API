@@ -89,29 +89,54 @@ public class MarbleControllerIntegrationTest {
         }
     }
 
-    @Test
-    void testCreateMarble() throws Exception {
-        Marble newMarble = new Marble(4L, "test_marble4", 1L, new Timestamp(1623917398), "marble4_test", "story_marble44L");
-        String url = "/api/marble/";
-        mockMvc.perform(
-            post(url)
-            .contentType("application/json")
-            .content(objectMapper.writeValueAsString(newMarble))
-        ).andExpect(status().isOk())
-        .andExpect(content().string("true"));
-
-        String query = "SELECT * FROM marble WHERE name=?;";
-        PreparedStatement statement = conn.prepareStatement(query);
-        statement.setString(1, "test_marlble3");
-        ResultSet rs = statement.executeQuery();
-        while(rs.next()) {
-            assertEquals(newMarble.getId(), rs.getLong(1));
-            assertEquals(newMarble.getUserId(),  rs.getLong(3));
-            assertEquals(newMarble.getCreationTime(), rs.getTimestamp(4));
-            assertEquals(newMarble.getTranslation(), rs.getString(5));
-            assertEquals(newMarble.getStory(), rs.getString(6));
+    @Nested
+    @DisplayName("Test CreateMarble API")
+    class TestCreateMarble {
+        @Test
+        @DisplayName("Should return ok when creating successfully")
+        void createMarbleWhenSuccessfully() throws Exception {
+            Marble newMarble = new Marble(4L, "test_marble4", 1L, new Timestamp(1623917498), "marble4_test", "story_marble4");
+            String url = "/api/marble/";
+            mockMvc.perform(
+                post(url)
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(newMarble))
+            ).andExpect(status().isOk());
         }
-    }
+    
+        @Test
+        @DisplayName("Check the marble has been successfully inserted")
+        void createMarbleCorrectly() throws Exception{
+            Marble newMarble = new Marble(4L, "test_marble4", 1L, new Timestamp(1623917498), "marble4_test", "story_marble4");
+    
+            String query = "SELECT * FROM marble WHERE name=?;";
+            PreparedStatement statement = conn.prepareStatement(query);
+            statement.setString(1, "test_marlble4");
+            ResultSet rs = statement.executeQuery();
+            while(rs.next()) {
+                assertEquals(newMarble.getId(), rs.getLong(1));
+                assertEquals(newMarble.getUserId(),  rs.getLong(3));
+                assertEquals(newMarble.getCreationTime(), rs.getTimestamp(4));
+                assertEquals(newMarble.getTranslation(), rs.getString(5));
+                assertEquals(newMarble.getStory(), rs.getString(6));
+            }
+        }
+        
+        @Test
+        @DisplayName("CreateMarble API should return correct response body")
+        void createMarbleReturnCorrectResponseBody() throws Exception{
+            Marble newMarble = new Marble(4L, "test_marble4", 1L, new Timestamp(1623917498), "marble4_test", "story_marble4");
+            String url = "/api/marble/";
+            MvcResult mvcResult = mockMvc.perform(
+                post(url)
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(newMarble))
+            ).andExpect(status().isOk()).andReturn();
+            String actualJsonResponse = mvcResult.getResponse().getContentAsString();
+            String expectedJsonResponse = objectMapper.writeValueAsString(newMarble);
+            assertEquals(expectedJsonResponse, actualJsonResponse);
+        }
+    }   
 
     @Test
     void testDeleteMarble() throws Exception {

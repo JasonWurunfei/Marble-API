@@ -60,17 +60,26 @@ public class MarbleControllerTest {
 
     @Test
     void testCreateMarble() throws Exception {
-        Marble newMarble = new Marble("test_marble1", 1L, new Timestamp(1623917398), "marble1_test", "story_marble1");
+        Long userId = 1L;
+        Marble newMarble = new Marble(3L, "test_marble3", userId, new Timestamp(1623917398), "marble3_test", "story_marble3");
+        List<Marble> marbles = new LinkedList<>();
+        marbles.add(newMarble);
         Mockito.when(marbleRepository.insert(newMarble)).thenReturn(true);
+        Mockito.when(marbleRepository.getLatestMarblesByUserId(userId, 1)).thenReturn(marbles);
 
         String url = "/api/marble/";
-        mockMvc.perform(
+        MvcResult mvcResult = mockMvc.perform(
             post(url)
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(newMarble))
-        ).andExpect(status().isOk())
-        .andExpect(content().string("true"));
+        ).andExpect(status().isOk()).andReturn();
+        
+        String actualJsonResponse = mvcResult.getResponse().getContentAsString();
+        String expectedJsonResponse = objectMapper.writeValueAsString(newMarble);
+        
+        assertEquals(expectedJsonResponse, actualJsonResponse);
         Mockito.verify(marbleRepository, times(1)).insert(newMarble);
+        Mockito.verify(marbleRepository, times(1)).getLatestMarblesByUserId(userId, 1);
     }
 
     @Test
