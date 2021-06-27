@@ -9,5 +9,4 @@ public class MarbleApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(MarbleApplication.class, args);
 	}
-
 }

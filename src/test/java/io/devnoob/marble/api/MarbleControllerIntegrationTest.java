@@ -85,26 +85,17 @@ public class MarbleControllerIntegrationTest {
 
     @Test
     void testCreateMarble() throws Exception {
-        Marble newMarble = new Marble("test_marble3", 1L, new Timestamp(1623917398), "marble3_test", "story_marble3");
+        Marble newMarble = new Marble(3L, "test_marble3", 1L, new Timestamp(1723917398), "marble3_test", "story_marble3");
         String url = "/api/marble/";
-        mockMvc.perform(
+        MvcResult mvcResult = mockMvc.perform(
             post(url)
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(newMarble))
-        ).andExpect(status().isOk())
-        .andExpect(content().string("true"));
+        ).andExpect(status().isOk()).andReturn();
 
-        String query = "SELECT * FROM marble WHERE name=?;";
-        PreparedStatement statement = conn.prepareStatement(query);
-        statement.setString(1, "test_marlble3");
-        ResultSet rs = statement.executeQuery();
-        while(rs.next()) {
-            assertEquals(3L, rs.getLong(1));
-            assertEquals(1L,  rs.getLong(3));
-            assertEquals(new Timestamp(1623917398), rs.getTimestamp(4));
-            assertEquals("marble3_test", rs.getString(5));
-            assertEquals("story_marble3", rs.getString(6));
-        }
+        String actualJsonResponse = mvcResult.getResponse().getContentAsString();
+        String expectedJsonResponse = objectMapper.writeValueAsString(newMarble);
+        assertEquals(expectedJsonResponse, actualJsonResponse);
     }
 
     @Test
