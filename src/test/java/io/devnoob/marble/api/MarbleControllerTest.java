@@ -18,7 +18,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.sql.Timestamp;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -185,12 +184,12 @@ public class MarbleControllerTest {
             Mockito.when(userRepository.find(1L)).thenReturn(user);
             List<Marble> marbles = new LinkedList<>();
             marbles.add(new Marble(1L, "test_marble1", 1L, new Timestamp(1623917398), "marble1_test", "story_marble1"));
-            Mockito.when(marbleRepository.getLatestMarblesByUserId(1L, 2))
+            Mockito.when(marbleRepository.getLatestMarblesByUserId(1L, 1))
                 .thenReturn(marbles);
 
-            String url = "/api/marble/latest/1?limit=2";
+            String url = "/api/marble/latest/1?limit=1";
             mockMvc.perform(get(url)).andExpect(status().isOk());
-            Mockito.verify(marbleRepository, times(1)).getLatestMarblesByUserId(1L, 2);
+            Mockito.verify(marbleRepository, times(1)).getLatestMarblesByUserId(1L, 1);
         }
 
         @Test

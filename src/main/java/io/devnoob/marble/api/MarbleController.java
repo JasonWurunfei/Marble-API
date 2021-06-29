@@ -48,12 +48,17 @@ public class MarbleController {
 
             marbleRepository.insert(
                 new Marble("Java", 1L, new Timestamp(System.currentTimeMillis()),
-                 "Java咖啡", "Java语言的由来")
+                 "Java咖啡", "Java 语言的由来")
             );
 
             marbleRepository.insert(
                 new Marble("Python", 1L, new Timestamp(System.currentTimeMillis()),
                  "大蟒蛇", "Python 语言的图像")
+            );
+
+            marbleRepository.insert(
+                new Marble("C", 1L, new Timestamp(System.currentTimeMillis()),
+                 "C语言", "C 语言的底层")
             );
         }
     }
