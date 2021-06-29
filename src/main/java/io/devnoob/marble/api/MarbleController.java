@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.devnoob.marble.persistence.entity.Marble;
+import io.devnoob.marble.persistence.entity.User;
 import io.devnoob.marble.persistence.repo.MarbleRepository;
+import io.devnoob.marble.persistence.repo.UserRepository;
 
 @RestController
 @RequestMapping("/api/marble")
@@ -27,6 +29,9 @@ public class MarbleController {
     
     @Autowired
     MarbleRepository marbleRepository;
+
+    @Autowired
+    UserRepository userRepository;
 
     @PostConstruct
     public void init() {
@@ -43,12 +48,17 @@ public class MarbleController {
 
             marbleRepository.insert(
                 new Marble("Java", 1L, new Timestamp(System.currentTimeMillis()),
-                 "Java咖啡", "Java语言的由来")
+                 "Java咖啡", "Java 语言的由来")
             );
 
             marbleRepository.insert(
                 new Marble("Python", 1L, new Timestamp(System.currentTimeMillis()),
                  "大蟒蛇", "Python 语言的图像")
+            );
+
+            marbleRepository.insert(
+                new Marble("C", 1L, new Timestamp(System.currentTimeMillis()),
+                 "C语言", "C 语言的底层")
             );
         }
     }
@@ -62,14 +72,22 @@ public class MarbleController {
     }
 
     @GetMapping("/user/{user_id}")
-    public List<Marble> getMarblesByUserId(@PathVariable Long user_id) {
-        return marbleRepository.getMarblesByUserId(user_id);
+    public ResponseEntity<List<Marble>> getMarblesByUserId(@PathVariable Long user_id) {
+        User user = userRepository.find(user_id);
+        if (user == null) 
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        List<Marble> marbles = marbleRepository.getMarblesByUserId(user_id);
+        return new ResponseEntity<>(marbles, HttpStatus.OK);
     }
 
     @GetMapping("/latest/{user_id}")
-    public List<Marble> getLatestMarblesByUserId(
+    public ResponseEntity<List<Marble>> getLatestMarblesByUserId(
         @PathVariable Long user_id, @RequestParam("limit") int limit) {
-        return marbleRepository.getLatestMarblesByUserId(user_id, limit);
+        User user = userRepository.find(user_id);
+        if (user == null) 
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        List<Marble> marbles = marbleRepository.getLatestMarblesByUserId(user_id, limit);
+        return new ResponseEntity<>(marbles, HttpStatus.OK);
     }
     
     @PostMapping("/")
